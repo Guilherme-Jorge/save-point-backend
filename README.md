@@ -31,10 +31,9 @@ run this command in root directory:
 $ npm install
 ```
 
-install postgres and create a database:
-```bash
-$ 1. database name: savepoint \n 2. database user: postgres
-```
+install postgres and create a database: <br>
+1. database name: savepoint <br> 2. database user: postgres
+
 
 ## Compile and run the project
 
