@@ -1,18 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserRegister } from './dto/userRegister.dto';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { user } from './entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserReturn } from './dto/userReturn.dto';
+import { UserSignIn } from './dto/userSignIn.dto';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(user)
         private usuariosRepository: Repository<user>,
-        private jwtService: JwtService
     ) {}
 
     /**
@@ -42,7 +41,7 @@ export class UserService {
         let userDB = {
             id: 0,
             email: '',
-            name: ''
+            username: ''
         };
 
         const saltRounds = 7
@@ -58,5 +57,52 @@ export class UserService {
             user: new UserReturn(userDB),
             message: 'Usuário registrado com sucesso.',
         };
+    }
+
+    async signIn(user: UserSignIn) {
+        const userDB = await this.findUserByEmail(user.email);
+
+        await bcrypt.compare(user.password, userDB.password).then(function(result) {
+            if (!result) 
+                throw new HttpException(
+                    {message: 'Senha ou email incorretos.'},
+                    HttpStatus.FORBIDDEN)
+        });
+
+        return {
+            message: 'Usuário logado com sucesso.'
+            };
+    }
+
+    /**
+     * This function find a user by id
+     * @param id user id
+     * @returns the finded user
+     */
+    async findUserById(id: number) {
+        const user = await this.usuariosRepository.findOne({ where: { id: id } })
+
+        if (!user) 
+            throw new HttpException(
+                { message: 'Usuário não encontrado.'},
+                HttpStatus.NOT_FOUND);
+
+        return user;
+    }
+
+    /**
+     * This function find a user by email
+     * @param email user email
+     * @returns the finded user
+     */
+    async findUserByEmail(email: string) {
+        const user = await this.usuariosRepository.findOne({ where: { email: email } })
+
+        if (!user) 
+            throw new HttpException(
+                { message: 'Usuário não encontrado.'},
+                HttpStatus.NOT_FOUND);
+
+        return user;
     }
 }

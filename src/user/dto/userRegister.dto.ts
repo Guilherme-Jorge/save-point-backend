@@ -11,5 +11,5 @@ export class UserRegister {
     password: string;
 
     @IsNotEmpty()
-    name: string;
+    username: string;
 }
