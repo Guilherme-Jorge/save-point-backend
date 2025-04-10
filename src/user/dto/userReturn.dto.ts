@@ -1,5 +1,5 @@
 interface UserReturnInterface {
-    id?: number,
+    id?: string,
     email: string,
     username: string
 }
@@ -12,7 +12,7 @@ export class UserReturn {
         this.username = user.username;
     }
 
-    id?: number; 
+    id?: string; 
 
     email: string;
 

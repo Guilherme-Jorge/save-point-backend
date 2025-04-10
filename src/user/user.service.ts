@@ -6,6 +6,7 @@ import { user } from './entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserReturn } from './dto/userReturn.dto';
 import { UserSignIn } from './dto/userSignIn.dto';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UserService {
@@ -39,7 +40,7 @@ export class UserService {
     async registerUser(user: UserRegister) {
 
         let userDB = {
-            id: 0,
+            id: '',
             email: '',
             username: ''
         };
@@ -70,7 +71,7 @@ export class UserService {
         });
 
         return {
-            message: 'Usuário logado com sucesso.'
+            message: 'Login efetuado com sucesso.'
             };
     }
 
@@ -79,7 +80,7 @@ export class UserService {
      * @param id user id
      * @returns the finded user
      */
-    async findUserById(id: number) {
+    async findUserById(id: string) {
         const user = await this.usuariosRepository.findOne({ where: { id: id } })
 
         if (!user) 
