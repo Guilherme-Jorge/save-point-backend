@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+    # restart: always
     ports:
       - 3000:3000
     networks:
@@ -16,11 +16,9 @@ services:
   db:
     container_name: save_point_postgres_db
     image: postgres:17.4-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=savepoint
+    # restart: always
+    env_file:
+      - ./.env
     ports:
       - 5432:5432
     volumes:
