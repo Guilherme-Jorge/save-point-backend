@@ -11,12 +11,12 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true
-    })
+      forbidNonWhitelisted: true,
+    }),
   );
   // Passando as dependências do AppModule para os Validators
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService);
-  await app.listen(configService.get<number>('PORT') ?? 3000);  
+  await app.listen(configService.get<number>('port') ?? 3000);
 }
 bootstrap();
