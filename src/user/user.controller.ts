@@ -5,20 +5,17 @@ import { UserSignIn } from './dto/userSignIn.dto';
 
 @Controller('user')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
-    @Post('register')
-    async registerUser(@Body() user: UserRegister) {
-        const respose = await this.userService.registerUser(user);
-        return respose;
-    }
+  @Post('register')
+  async registerUser(@Body() user: UserRegister) {
+    const respose = await this.userService.registerUser(user);
+    return respose;
+  }
 
-    @Post('signin')
-    async signIn(@Body() user: UserSignIn) {
-        const response = await this.userService.signIn(user);
-        return response;
-    }
-
-
-    
+  @Post('signin')
+  async signIn(@Body() user: UserSignIn) {
+    const response = await this.userService.signIn(user);
+    return response;
+  }
 }
