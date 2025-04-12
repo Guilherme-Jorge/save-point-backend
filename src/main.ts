@@ -14,7 +14,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  // Passando as dependências do AppModule para os Validators
+  // Passing the dependencies from AppModule to the Validators
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService);
   await app.listen(configService.get<number>('port') ?? 3000);
