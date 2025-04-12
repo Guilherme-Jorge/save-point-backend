@@ -6,15 +6,15 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Repository } from 'typeorm';
-import { user } from '../entity/user.entity';
+import { User } from '../entity/user.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 @ValidatorConstraint({ async: true })
 export class EmailValidator implements ValidatorConstraintInterface {
   constructor(
-    @InjectRepository(user)
-    private usuariosRepository: Repository<user>,
+    @InjectRepository(User)
+    private usuariosRepository: Repository<User>,
   ) {}
 
   async validate(email: string): Promise<boolean> {

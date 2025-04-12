@@ -1,23 +1,45 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+// import { Game } from 'src/game/entity/game.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
-export class user {
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @Column()
+  username: string;
 
-    @Column()
-    username: string;
+  @Column()
+  email: string;
 
-    @Column()
-    email: string;
+  @Column()
+  password: string;
 
-    @Column()
-    password: string;
+  @Column({ nullable: true })
+  forgotPassToken: string;
 
-    @Column({ nullable: true })
-    forgotPassToken: string;
+  @Column({ nullable: true })
+  forgotPassExpires: Date;
 
-    @Column({ nullable: true })
-    forgotPassExpires: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  // @ManyToMany(() => Game)
+  // @JoinTable()
+  // ownership: Game[];
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  follows: User[];
 }

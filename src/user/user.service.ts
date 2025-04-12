@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserRegister } from './dto/userRegister.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { user } from './entity/user.entity';
+import { User } from './entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserReturn } from './dto/userReturn.dto';
 import { UserSignIn } from './dto/userSignIn.dto';
@@ -10,8 +10,8 @@ import { UserSignIn } from './dto/userSignIn.dto';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(user)
-    private usuariosRepository: Repository<user>,
+    @InjectRepository(User)
+    private usuariosRepository: Repository<User>,
   ) {}
 
   /**
