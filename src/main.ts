@@ -17,6 +17,6 @@ async function bootstrap() {
   // Passing the dependencies from AppModule to the Validators
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService);
-  await app.listen(configService.get<number>('port') ?? 3000);
+  await app.listen(configService.get<number>('node.port') ?? 3000);
 }
 bootstrap();

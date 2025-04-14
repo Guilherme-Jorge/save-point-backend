@@ -1,5 +1,5 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import path from 'path';
+import * as path from 'path';
 
 export default (): PostgresConnectionOptions => ({
   // Postgres
@@ -15,7 +15,8 @@ export default (): PostgresConnectionOptions => ({
     process.env.POSTGRES_URL ||
     `postgres://postgres:postgres@postgres:5432/savepoint`,
 
-  entities: [path.resolve(__dirname, '..') + '**/*.entity{.ts,.js}'],
+  entities: [path.resolve(__dirname, '..') + '/**/*.entity{.ts,.js}'],
 
-  synchronize: true,
+  // If the Node.JS environment is production, don't use synchronize
+  synchronize: process.env.NODE_ENV === 'production' ? false : true,
 });
