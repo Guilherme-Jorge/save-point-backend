@@ -6,7 +6,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Repository } from 'typeorm';
-import { User } from '../entity/user.entity';
+import { User } from '../entities/user.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
