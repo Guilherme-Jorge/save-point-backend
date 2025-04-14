@@ -16,6 +16,16 @@ erDiagram
     OWNERSHIP {
         string user_id FK
         string game_id FK
+        string status
+        string progress
+        date created_at
+    }
+
+    %% User's games wishlist
+    WISHLIST {
+        string user_id FK
+        string game_id FK
+        date created_at
     }
 
     %% Main game entry
@@ -25,12 +35,13 @@ erDiagram
         string name
         string summary
         date release_date
+        date created_at
     }
 
     %% Game and Genre relationship
     GAME_GENRE {
-        string game_id PK
-        string genre_id PK
+        string game_id FK
+        string genre_id FK
     }
 
     %% Genre classification
@@ -42,8 +53,8 @@ erDiagram
 
     %% Game and Theme relationship
     GAME_THEME {
-        string game_id PK
-        string theme_id PK
+        string game_id FK
+        string theme_id FK
     }
 
     %% Themes, as in Horror, Sci-Fi etc.
@@ -55,8 +66,8 @@ erDiagram
 
     %% Game and Game Mode relationship
     GAME_GAMEMODE {
-        string game_id PK
-        string gamemode_id PK
+        string game_id FK
+        string gamemode_id FK
     }
 
     %% Game modes, including Single-player, Multiplayer etc.
@@ -111,17 +122,33 @@ erDiagram
         string game_id FK
     }
 
+    %% Achievements from the game
+    ACHIEVEMENT {
+        string id PK
+        string name
+        string description
+        number rarity
+        string game_id FK
+    }
+
+    %% User's game achievements
+    USER_ACHIEVEMENT {
+        string user_id FK
+        string achievement_id FK
+        date created_at
+    }
+
     %% USER and USER relationship for follow system
     FOLLOWS {
         string follower_id FK
-        string followed_id FK
+        string following_id FK
         date created_at
     }
 
     %% USER and USER relationship for direct messaging system
     "DIRECT MESSAGE" {
         string sender_id FK
-        string reciever_id FK
+        string receiver_id FK
         date created_at
         date updated_at
         string message
@@ -130,6 +157,10 @@ erDiagram
     %% USER <-> GAME via OWNERSHIP
     USER ||--o{ OWNERSHIP : owns
     GAME ||--o{ OWNERSHIP : "is owned by"
+
+    %% USER <-> GAME via WISHLIST
+    USER ||--o{ WISHLIST : wants
+    GAME ||--o{ WISHLIST : "is wanted by"
 
     %% GAME <-> PLATFORM via GAME_PLATFORM
     GAME ||--o{ GAME_PLATFORM : "associated with"
@@ -155,7 +186,14 @@ erDiagram
     GAME ||--o{ ARTWORK : has
 
     %% GAME <-> SCREENSHOT
-    GAME ||--o{ SCREENSHOT : "has"
+    GAME ||--o{ SCREENSHOT : has
+
+    %% GAME <-> ACHIEVEMENT
+    GAME ||--o{ ACHIEVEMENT : offers
+
+    %% USER <-> ACHIEVEMENT via USER_ACHIEVEMENT
+    USER ||--o{ USER_ACHIEVEMENT : tracks
+    USER_ACHIEVEMENT }o--|| ACHIEVEMENT : "is tracked by"
 
     %% FOLLOWS/FOLLOWED from USER
     FOLLOWS }o--|| USER : follows
