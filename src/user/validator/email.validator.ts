@@ -14,12 +14,12 @@ import { Injectable } from '@nestjs/common';
 export class EmailValidator implements ValidatorConstraintInterface {
   constructor(
     @InjectRepository(User)
-    private usuariosRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
   async validate(email: string): Promise<boolean> {
     let userExist;
-    await this.usuariosRepository
+    await this.userRepository
       .findOne({ where: { email: email } })
       .then((user) => {
         userExist = user;

@@ -1,4 +1,4 @@
-// import { UserAchievement } from 'src/achievement/entities/user-achievement.entity';
+import { UserAchievement } from 'src/achievement/entities/user-achievement.entity';
 import { Ownership } from 'src/game/entities/ownership.entity';
 import { Wishlist } from 'src/game/entities/wishlist.entity';
 import { DirectMessage } from 'src/social/entities/direct-messages.entity';
@@ -44,8 +44,8 @@ export class User {
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlisted: Wishlist[];
 
-  // @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
-  // achieved: UserAchievement[];
+  @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
+  achieved: UserAchievement[];
 
   // The Follows rows where this user is the follower.
   @OneToMany(() => Follows, (follows) => follows.followed)
