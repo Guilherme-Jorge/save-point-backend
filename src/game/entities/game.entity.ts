@@ -30,8 +30,8 @@ export class Game {
   @Column({ type: 'text', nullable: true })
   summary?: string;
 
-  @Column({ type: 'date' })
-  releaseDate: Date;
+  @Column({ type: 'date', nullable: true })
+  releaseDate?: Date;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

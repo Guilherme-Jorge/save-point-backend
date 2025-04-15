@@ -17,9 +17,13 @@ import { Platform } from './entities/platform.entity';
 import { Screenshot } from './entities/screenshot.entity';
 import { Theme } from './entities/theme.entity';
 import { Wishlist } from './entities/wishlist.entity';
+import { ConfigModule } from '@nestjs/config';
+import igdbConfig from 'src/config/igdb.config';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    ConfigModule.forFeature(igdbConfig),
     TypeOrmModule.forFeature([
       Achievement,
       Company,
@@ -37,6 +41,7 @@ import { Wishlist } from './entities/wishlist.entity';
       Theme,
       Wishlist,
     ]),
+    HttpModule,
   ],
   exports: [TypeOrmModule],
   controllers: [GameController],
