@@ -11,7 +11,7 @@ import { UserSignIn } from './dto/userSignIn.dto';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private usuariosRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
   /**
@@ -23,9 +23,9 @@ export class UserService {
     try {
       return await action();
     } catch (e) {
-      console.log('Log do erro: ' + e);
+      console.log('Error log: ' + e);
       throw new HttpException(
-        { message: 'Erro ao salvar dados no banco.' },
+        { message: 'Error when saving to database.' },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -49,12 +49,12 @@ export class UserService {
     });
 
     await this.executePromises(async () => {
-      userDB = await this.usuariosRepository.save(user);
+      userDB = await this.userRepository.save(user);
     });
 
     return {
       user: new UserReturn(userDB),
-      message: 'Usuário registrado com sucesso.',
+      message: 'User registered successfully.',
     };
   }
 
@@ -66,13 +66,13 @@ export class UserService {
       .then(function (result) {
         if (!result)
           throw new HttpException(
-            { message: 'Senha ou email incorretos.' },
+            { message: 'Email or password are incorrect.' },
             HttpStatus.FORBIDDEN,
           );
       });
 
     return {
-      message: 'Login efetuado com sucesso.',
+      message: 'Login successful.',
     };
   }
 
@@ -82,11 +82,11 @@ export class UserService {
    * @returns the finded user
    */
   async findUserById(id: string) {
-    const user = await this.usuariosRepository.findOne({ where: { id: id } });
+    const user = await this.userRepository.findOne({ where: { id: id } });
 
     if (!user)
       throw new HttpException(
-        { message: 'Usuário não encontrado.' },
+        { message: 'User not found.' },
         HttpStatus.NOT_FOUND,
       );
 
@@ -99,13 +99,13 @@ export class UserService {
    * @returns the finded user
    */
   async findUserByEmail(email: string) {
-    const user = await this.usuariosRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { email: email },
     });
 
     if (!user)
       throw new HttpException(
-        { message: 'Usuário não encontrado.' },
+        { message: 'User not found.' },
         HttpStatus.NOT_FOUND,
       );
 
