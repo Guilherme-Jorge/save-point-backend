@@ -8,7 +8,7 @@ export class AddPgTrgmAndGameNameIndex1745591106667
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
 
     // Set the similarity threshold for pg_tgrm
-    await queryRunner.query('SET pg_trgm.similarity_threshold = 0.1;');
+    await queryRunner.query('SET pg_trgm.similarity_threshold = 0.25;');
 
     // add a GIN index on game.name for trigram searches
     await queryRunner.query(

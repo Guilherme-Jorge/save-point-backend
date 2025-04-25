@@ -7,6 +7,19 @@ import { UpdateGameDto } from './dto/update-game.dto';
 import { ConfigService } from '@nestjs/config';
 import { IgdbGame } from 'src/shared/models/igdb-game';
 
+function getThreshold(length: number): number {
+  if (length <= 3) {
+    return 0.4;
+  }
+  if (length <= 6) {
+    return 0.35;
+  }
+  if (length <= 12) {
+    return 0.3;
+  }
+  return 0.25;
+}
+
 @Injectable()
 export class GameService {
   constructor(
@@ -49,9 +62,15 @@ export class GameService {
   }
 
   async fuzzySeachByName(query: string, limit = 10): Promise<Game[]> {
+    const threshold = getThreshold(query.length);
+
     return this.gameRepository
       .createQueryBuilder('game')
       .where('game.name % :query', { query })
+      .andWhere('similarity(game.name, :name) > :threshold', {
+        query,
+        threshold,
+      })
       .orderBy('similarity(game.name, :query)', 'DESC')
       .limit(limit)
       .getMany();
