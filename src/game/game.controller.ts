@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { GameService } from './game.service';
 import { CreateGameDto } from './dto/create-game.dto';
@@ -21,10 +22,10 @@ import { IgdbGame } from 'src/shared/models/igdb-game';
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-  @Post()
+  @Post('game')
   create(
     @Body() createGameDto: Omit<CreateGameDto, 'releaseDate'>,
-    @Body('releaseDate', ParseDatePipe) releaseDate?: Date,
+    @Body('releaseDate', new ParseDatePipe()) releaseDate?: Date,
   ) {
     const dto = releaseDate ? { ...createGameDto, releaseDate } : createGameDto;
 
@@ -41,24 +42,29 @@ export class GameController {
     return this.gameService.findAll();
   }
 
-  @Get(':id')
+  @Get('game/:id')
   findOne(@Param('id', GameByIdPipe) game: Game) {
     return game;
   }
 
-  @Patch(':id')
+  @Patch('game/:id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateGameDto: Omit<UpdateGameDto, 'releaseDate'>,
-    @Body('releaseDate', ParseDatePipe) releaseDate?: Date,
+    @Body('releaseDate', new ParseDatePipe()) releaseDate?: Date,
   ) {
     const dto = releaseDate ? { ...updateGameDto, releaseDate } : updateGameDto;
 
     return this.gameService.update(id, dto);
   }
 
-  @Delete(':id')
+  @Delete('game/:id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.gameService.remove(id);
+  }
+
+  @Get('search')
+  search(@Query('q') q: string) {
+    return this.gameService.fuzzySeachByName(q);
   }
 }

@@ -21,7 +21,7 @@ export class Game {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   igdbId: number;
 
   @Column()

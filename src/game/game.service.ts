@@ -47,4 +47,13 @@ export class GameService {
   async remove(id: string): Promise<void> {
     await this.gameRepository.delete(id);
   }
+
+  async fuzzySeachByName(query: string, limit = 10): Promise<Game[]> {
+    return this.gameRepository
+      .createQueryBuilder('game')
+      .where('game.name % :query', { query })
+      .orderBy('similarity(game.name, :query)', 'DESC')
+      .limit(limit)
+      .getMany();
+  }
 }
