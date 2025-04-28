@@ -10,7 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class GameFromIgdb implements PipeTransform<string, Promise<IgdbGame>> {
+export class GameFromIgdbPipe
+  implements PipeTransform<string, Promise<IgdbGame>>
+{
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
