@@ -1,3 +1,4 @@
+import { Game } from 'src/game/entities/game.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   CreateDateColumn,
@@ -6,7 +7,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Game } from './game.entity';
 
 @Entity()
 export class Wishlist {
