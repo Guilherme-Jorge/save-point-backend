@@ -7,19 +7,12 @@ import {
 } from 'typeorm';
 import { Game } from './game.entity';
 import { Company } from './company.entity';
-
-export enum CompanyRoles {
-  DEVELOPER = 'developer',
-  PUBLISHER = 'publisher',
-}
+import { CompanyRoles } from '../enums/company-roles.enum';
 
 @Entity()
 export class InvolvedCompany {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column()
-  igdbId: number;
 
   @Column({
     type: 'enum',

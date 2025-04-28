@@ -6,7 +6,7 @@ export class Platform {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   igdbId: number;
 
   @Column()

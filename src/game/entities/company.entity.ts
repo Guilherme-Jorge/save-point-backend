@@ -6,6 +6,9 @@ export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ unique: true })
+  igdbId: number;
+
   @Column()
   name: string;
 

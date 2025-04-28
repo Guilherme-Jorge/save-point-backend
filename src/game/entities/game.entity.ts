@@ -5,8 +5,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Ownership } from './ownership.entity';
-import { Wishlist } from './wishlist.entity';
 import { GameGenre } from './game-genre.entity';
 import { GameTheme } from './game-theme.entity';
 import { GameGamemode } from './game-gamemode.entity';
@@ -15,6 +13,8 @@ import { InvolvedCompany } from './involved-company.entity';
 import { Artwork } from './artwork.entity';
 import { Screenshot } from './screenshot.entity';
 import { Achievement } from 'src/achievement/entities/achievement.entity';
+import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
+import { Ownership } from 'src/ownership/entities/ownership.entity';
 
 @Entity()
 export class Game {

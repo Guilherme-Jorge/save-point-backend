@@ -12,7 +12,7 @@ export class Artwork {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   igdbId: number;
 
   @Column()
