@@ -1,3 +1,6 @@
+import { Game } from 'src/game/entities/game.entity';
+import { GameProgress } from 'src/game/enums/game-progress.enum';
+import { GameStatus } from 'src/game/enums/game-status.enum';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -6,29 +9,13 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Game } from './game.entity';
-
-export enum GameStatus {
-  BACKLOG = 'backlog',
-  PLAYING = 'playing',
-  PLAYED = 'played',
-}
-
-export enum GameProgress {
-  STARTED = 'started',
-  DROPPED = 'dropped',
-  FINISHED = 'finished',
-  COMPLETED = 'completed',
-}
 
 @Entity()
 export class Ownership {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column()
-  gameId: string;
 
   @Column({
     type: 'enum',
@@ -43,6 +30,15 @@ export class Ownership {
     nullable: true,
   })
   progress?: GameProgress;
+
+  @Column({ type: 'timestamp', nullable: true })
+  startedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  endedAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
