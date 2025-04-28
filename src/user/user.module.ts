@@ -14,5 +14,6 @@ import userConfig from 'src/config/user.config';
   ],
   providers: [UserService, EmailValidator],
   controllers: [UserController],
+  exports: [UserService],
 })
 export class UserModule {}
