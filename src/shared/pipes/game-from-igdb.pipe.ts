@@ -8,6 +8,7 @@ import { IgdbGame, IgdbGameInterface } from '../models/igdb-game';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import * as https from 'https';
 
 @Injectable()
 export class GameFromIgdbPipe
@@ -60,6 +61,10 @@ export class GameFromIgdbPipe
       const response = await firstValueFrom(
         this.httpService.post('https://api.igdb.com/v4/games', query, {
           headers,
+          // just in development. Vulnerable to 'man-in-the-middle'.
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
         }),
       );
 

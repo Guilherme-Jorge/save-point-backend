@@ -24,6 +24,7 @@ import { Company } from './entities/company.entity';
 import { InvolvedCompany } from './entities/involved-company.entity';
 import { CompanyRoles } from './enums/company-roles.enum';
 import { Artwork } from './entities/artwork.entity';
+import { GameReturn } from './dto/game-return.dto';
 
 function getThreshold(length: number): number {
   if (length <= 3) {
@@ -87,7 +88,7 @@ export class GameService {
     return this.gameRepository.save(createGameDto);
   }
 
-  async createFromIgdb(igdbGame: IgdbGame): Promise<Game> {
+  async createFromIgdb(igdbGame: IgdbGame): Promise<GameReturn> {
     const game = this.gameRepository.create({
       igdbId: igdbGame.id,
       name: igdbGame.name,
@@ -229,6 +230,7 @@ export class GameService {
         'screenshots',
         'companies',
         'companies.company',
+        'achievements'
       ],
     });
 
@@ -238,22 +240,40 @@ export class GameService {
       );
     }
 
-    return fullGame;
+    return new GameReturn(fullGame);
   }
 
-  async findAll(): Promise<Game[]> {
-    const games = await this.gameRepository.find();
+  async findAll(): Promise<GameReturn[]> {
+    const games = await this.gameRepository.find({ 
+      relations: [
+      'genres',
+      'genres.genre',
+      'themes',
+      'themes.theme',
+      'gamemodes',
+      'gamemodes.gamemode',
+      'platforms',
+      'platforms.platform',
+      'artworks',
+      'screenshots',
+      'companies',
+      'companies.company',
+    ]});
     if (!games) {
       throw new NotFoundException('Games not found');
     }
 
-    return games;
+    const gameReturn: GameReturn[] = [];
+
+    games.map((game) => gameReturn.push(new GameReturn(game)));
+
+    return gameReturn;
   }
 
-  async fuzzySeachByName(query: string, limit = 10): Promise<Game[]> {
+  async fuzzySeachByName(query: string, limit = 10): Promise<GameReturn[]> {
     const threshold = getThreshold(query.length);
 
-    return this.gameRepository
+    const games = await this.gameRepository
       .createQueryBuilder('game')
       .where('game.name % :query', { query })
       .andWhere('similarity(game.name, :name) > :threshold', {
@@ -263,6 +283,10 @@ export class GameService {
       .orderBy('similarity(game.name, :query)', 'DESC')
       .limit(limit)
       .getMany();
+      const gameReturn: GameReturn[] = [];
+      games.map((game) => gameReturn.push(new GameReturn(game)));
+  
+      return gameReturn;
   }
 
   async update(
