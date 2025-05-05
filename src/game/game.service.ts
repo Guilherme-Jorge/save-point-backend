@@ -74,9 +74,7 @@ export class GameService {
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(InvolvedCompany)
-    private readonly involvedCompanyRepository: Repository<InvolvedCompany>,
-
-    private readonly configService: ConfigService,
+    private readonly involvedCompanyRepository: Repository<InvolvedCompany>
   ) {}
 
   /**
