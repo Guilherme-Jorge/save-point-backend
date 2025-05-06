@@ -154,6 +154,16 @@ erDiagram
         string message
     }
 
+    REVIEW {
+        string id PK
+        string user_id FK
+        string game_id FK
+        boolean rating
+        string review_text
+        date created_at
+        date updated_at
+    }
+
     %% USER <-> GAME via OWNERSHIP
     USER ||--o{ OWNERSHIP : owns
     GAME ||--o{ OWNERSHIP : "is owned by"
@@ -161,6 +171,10 @@ erDiagram
     %% USER <-> GAME via WISHLIST
     USER ||--o{ WISHLIST : wants
     GAME ||--o{ WISHLIST : "is wanted by"
+
+    %% USER <-> GAME via REVIEW
+    USER ||--o{ REVIEW : writes
+    GAME ||--o{ REVIEW : "is reviewed by"
 
     %% GAME <-> PLATFORM via GAME_PLATFORM
     GAME ||--o{ GAME_PLATFORM : "associated with"
