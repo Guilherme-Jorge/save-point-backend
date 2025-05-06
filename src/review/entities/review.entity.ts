@@ -22,10 +22,10 @@ export class Review {
   reviewText?: string;
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAt;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt;
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.reviews, { onDelete: 'CASCADE' })
   @JoinColumn()
