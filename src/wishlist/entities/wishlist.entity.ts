@@ -16,11 +16,11 @@ export class Wishlist {
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.wishlisted, { onDelete: 'CASCADE' })
   @JoinTable()
   user: User;
 
-  @ManyToOne(() => Game, (game) => game, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Game, (game) => game.wishlisted, { onDelete: 'CASCADE' })
   @JoinTable()
   game: Game;
 }
