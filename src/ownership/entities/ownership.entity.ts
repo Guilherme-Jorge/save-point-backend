@@ -47,7 +47,7 @@ export class Ownership {
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Game, (game) => game, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Game, (game) => game.library, { onDelete: 'CASCADE' })
   @JoinColumn()
   game: Game;
 }
