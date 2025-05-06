@@ -5,9 +5,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { GameModule } from './game/game.module';
-// import { IgdbWebhookModule } from './webhooks/igdb/igdb-webhook.module';
 import { OwnershipModule } from './ownership/ownership.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { ReviewModule } from './review/review.module';
+// import { AchievementModule } from './achievement/achievement.module';
+// import { DirectMessageModule } from './direct-message/direct-message.module';
+// import { IgdbWebhookModule } from './webhooks/igdb/igdb-webhook.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
@@ -25,6 +28,9 @@ import databaseConfig from './config/database.config';
     GameModule,
     OwnershipModule,
     WishlistModule,
+    ReviewModule,
+    // AchievementModule,
+    // DirectMessageModule,
     // IgdbWebhookModule,
   ],
   controllers: [AppController],
