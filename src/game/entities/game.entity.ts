@@ -12,9 +12,10 @@ import { GamePlatform } from './game-platform.entity';
 import { InvolvedCompany } from './involved-company.entity';
 import { Artwork } from './artwork.entity';
 import { Screenshot } from './screenshot.entity';
-import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
 import { Ownership } from 'src/ownership/entities/ownership.entity';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
+import { Review } from 'src/review/entities/review.entity';
 
 @Entity()
 export class Game {
@@ -41,6 +42,9 @@ export class Game {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.game)
   wishlisted: Wishlist[];
+
+  @OneToMany(() => Review, (review) => review.game)
+  reviews: Review[];
 
   @OneToMany(() => GameGenre, (gameGenre) => gameGenre.game)
   genres: GameGenre[];

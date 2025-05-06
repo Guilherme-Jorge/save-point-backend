@@ -1,7 +1,7 @@
 import { UserAchievement } from 'src/achievement/entities/user-achievement.entity';
 import { Ownership } from 'src/ownership/entities/ownership.entity';
 import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
-import { DirectMessage } from 'src/social/entities/direct-messages.entity';
+import { DirectMessage } from 'src/direct-message/entities/direct-message.entity';
 import { Follows } from 'src/social/entities/follows.entity';
 import {
   Column,
@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Review } from 'src/review/entities/review.entity';
 
 @Entity()
 export class User {
@@ -43,6 +44,9 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlisted: Wishlist[];
+
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
 
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   achieved: UserAchievement[];
