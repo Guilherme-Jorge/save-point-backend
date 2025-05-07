@@ -42,12 +42,7 @@ export class UserService {
       email: '',
       username: '',
     };
-
-    const saltRounds = 7;
-    await bcrypt.hash(user.password, saltRounds).then(function (hash) {
-      user.password = hash;
-    });
-
+        
     await this.executePromises(async () => {
       userDB = await this.userRepository.save(user);
     });

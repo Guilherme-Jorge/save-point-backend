@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ConsoleLogger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -13,6 +13,8 @@ import { ReviewModule } from './review/review.module';
 // import { IgdbWebhookModule } from './webhooks/igdb/igdb-webhook.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
+import { APP_FILTER } from '@nestjs/core';
+import { ExceptionFilterGlobal } from './shared/filters/exception-filter-global';
 
 @Module({
   imports: [
@@ -34,6 +36,12 @@ import databaseConfig from './config/database.config';
     // IgdbWebhookModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+    provide: APP_FILTER,
+    useClass: ExceptionFilterGlobal,
+    },
+    ConsoleLogger,
+    AppService],
 })
 export class AppModule {}
