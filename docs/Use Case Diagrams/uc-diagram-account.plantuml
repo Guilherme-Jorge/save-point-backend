@@ -1,0 +1,12 @@
+@startuml
+title Autenticação e Conta
+
+actor Usuário
+
+Usuário --> (Entrar no sistema)
+Usuário --> (Registrar conta)
+Usuário --> (Editar conta)
+Usuário --> (Deletar conta)
+Usuário --> (Sair do sistema)
+
+@enduml
