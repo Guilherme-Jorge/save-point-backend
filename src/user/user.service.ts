@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserReturn } from './dto/userReturn.dto';
 import { UserSignIn } from './dto/userSignIn.dto';
+import { UserUpdate } from './dto/userUpdate.dto';
 
 @Injectable()
 export class UserService {
@@ -53,6 +54,11 @@ export class UserService {
     };
   }
 
+  /**
+   * This function signin a user.
+   * @param user to signin.
+   * @returns promise callback.
+   */
   async signIn(user: UserSignIn) {
     const userDB = await this.findUserByEmail(user.email);
 
@@ -69,6 +75,55 @@ export class UserService {
     return {
       message: 'Login successful.',
     };
+  }
+
+  /**
+   * this function update an existent user.
+   * @param id existent user id
+   * @param user existent user data
+   * @returns promise callback.
+   */
+  async updateUser(id: string, user: Partial<UserUpdate>) {
+      const userToUpdate = await this.findUserById(id);
+      userToUpdate.updatedAt = new Date();
+
+      Object.entries(user).map(async ([key, value]) => {
+        userToUpdate[key] = value;
+      })
+
+      await this.executePromises(async () => {
+          await this.userRepository.save(userToUpdate);
+      });
+
+      return {
+          user: new UserReturn(userToUpdate),
+          message: 'User updated successfully.'
+      }  
+  }
+
+  /**
+   * This function delete an existent user.
+   * @param id user id.
+   * @param pass user password.
+   * @returns promise callback.
+   */
+  async deleteUser(id: string, pass: string) {
+      const userToDelete = await this.findUserById(id);
+      const samePassword = await bcrypt.compare(pass, userToDelete.password);
+
+      if (!samePassword)
+          throw new HttpException(
+              {message: 'Senha incorreta.'},
+              HttpStatus.FORBIDDEN)
+
+      await this.executePromises(async () => {
+          await this.userRepository.delete(id);
+      });
+
+      return {
+          user: new UserReturn(userToDelete),
+          message: 'user permanently deleted.'
+      }  
   }
 
   /**
