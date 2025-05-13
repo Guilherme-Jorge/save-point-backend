@@ -19,6 +19,18 @@ export class UserController {
     return await this.userService.signIn(user);
   }
 
+  @Post('forgotpass')
+  async forgotPassFirstStep(@Body('email') email: string) {
+      const response = await this.userService.forgotPass(email);
+      return response;
+  }
+
+  @Post('recoverpass/:id')
+  async forgotPassSecondStep(@Param('id') token: string, @Body('newPassword') newPass: string) {
+      const response = await this.userService.recoverPass(token, newPass);
+      return response;
+  }
+
   @Put(':id')
   async updateUser(@Param('id') id: string,@Body() user: UserUpdate) {
       const response = await this.userService.updateUser(id, user);

@@ -6,9 +6,11 @@ import { User } from './entities/user.entity';
 import { EmailValidator } from './validator/email.validator';
 import { ConfigModule } from '@nestjs/config';
 import userConfig from 'src/config/user.config';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
+    EmailModule,
     ConfigModule.forFeature(userConfig),
     TypeOrmModule.forFeature([User]),
   ],

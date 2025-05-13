@@ -7,12 +7,15 @@ import * as bcrypt from 'bcryptjs';
 import { UserReturn } from './dto/userReturn.dto';
 import { UserSignIn } from './dto/userSignIn.dto';
 import { UserUpdate } from './dto/userUpdate.dto';
+import { v4 as uuid } from 'uuid';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly emailService: EmailService
   ) {}
 
   /**
@@ -127,6 +130,52 @@ export class UserService {
   }
 
   /**
+   * FirstStep to recover the user password. Send a email with a Dinamic Url to reset the password.
+   * @param email user email.
+   */
+  async forgotPass(email: string) {
+    const userDB = await this.findUserByEmail(email);
+
+    const token = uuid();
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 1);
+
+    userDB.forgotPassToken = token;
+    userDB.forgotPassExpires = expirationDate;
+
+    await this.executePromises(async () => {
+        await this.userRepository.save(userDB);
+    });
+
+    // link to reset the password
+    const link = `http:localhost:5173/forgotpass?token=${token}`
+
+    const emailOptions = {
+        recipents: [email],
+        subject: "SavePoint - Recuperar Senha",
+        html: `<p>Se deseja recuperar a sua senha, acesse este link: <a>${link}</a></p><br><i>Atenção, você terá apenas 1 hora para alterar sua senha.</i><br><p>Se não foi você, desconsidere a mensagem.</p>`
+    }
+
+    this.emailService.sendEmail(emailOptions);
+  }
+
+  async recoverPass(token: string, newPass: string) {
+    const userDB = await this.findUserByTokenAndExpireDate(token);
+
+    const saltRounds = 7
+    await bcrypt.hash(newPass, saltRounds).then(function(hash) {
+        // update new password
+        userDB.password = hash;
+        // reset passToken after recovered the password
+        userDB.forgotPassToken = '';
+    });
+
+    await this.executePromises(async () => {
+        await this.userRepository.save(userDB);
+    });
+  }
+
+  /**
    * This function find a user by id
    * @param id user id
    * @returns the finded user
@@ -160,5 +209,33 @@ export class UserService {
       );
 
     return user;
+  }
+
+  /**
+   * This function find a user by email
+   * @param email user email
+   * @returns the finded user
+   */
+  async findUserByTokenAndExpireDate(token: string) {
+      const userDB = await this.userRepository.findOne({ where: { forgotPassToken: token } })
+      if (!userDB || !userDB.forgotPassExpires) 
+          throw new HttpException(
+              { message: 'Token expirado ou inválido.'},
+              HttpStatus.FORBIDDEN);
+      
+      if (userDB.forgotPassToken == '')
+          throw new HttpException(
+              { message: 'A senha já foi alterada.'},
+              HttpStatus.FORBIDDEN);
+
+      const currentTime = new Date();
+      const expires = new Date(userDB.forgotPassExpires)
+
+      if (currentTime > expires)
+          throw new HttpException(
+              { message: 'Token expirado ou inválido.'},
+              HttpStatus.FORBIDDEN);
+      
+      return userDB;
   }
 }
