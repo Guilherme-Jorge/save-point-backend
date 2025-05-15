@@ -14,6 +14,6 @@ Usuário --> (Enviar Mensagem)
 
 Usuário --> (Criar Tópico no Fórum)
 Usuário --> (Responder em Tópico do Fórum)
-Usuário --> (Ministrar Fórum)
+Usuário --> (Ministrar Tópico)
 
 @enduml

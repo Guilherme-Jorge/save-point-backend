@@ -164,6 +164,34 @@ erDiagram
         date updated_at
     }
 
+    %% Forum system
+    FORUM {
+        string id PK
+        string game_id FK
+        string title
+        date created_at
+    }
+
+    %% Topic inside the Forum
+    TOPIC {
+        string id PK
+        string forum_id FK
+        string owner_id FK
+        string title
+        date created_at
+        date updated_at
+    }
+
+    %% Messages inside a Topic
+    TOPIC_MESSAGE {
+        string id PK
+        string topic_id FK
+        string user_id FK
+        date created_at
+        date updated_at
+        string message
+    }
+
     %% USER <-> GAME via OWNERSHIP
     USER ||--o{ OWNERSHIP : owns
     GAME ||--o{ OWNERSHIP : "is owned by"
@@ -216,4 +244,24 @@ erDiagram
     %% DIRECT MESSAGES from USER
     USER ||--o{ "DIRECT MESSAGE" : sends
     USER ||--o{ "DIRECT MESSAGE" : receives
+
+    %% GAME <-> FORUM
+    GAME ||--|| FORUM : "has forum"
+    FORUM }o--|| GAME : "is for"
+
+    %% FORUM <-> TOPIC
+    FORUM ||--o{ TOPIC : contains
+    TOPIC }o--|| FORUM : "belongs to"
+
+    %% USER <-> TOPIC
+    USER ||--o{ TOPIC : creates
+    TOPIC }o--|| USER : owner
+
+    %% TOPIC <-> TOPIC_MESSAGE
+    TOPIC ||--o{ TOPIC_MESSAGE : "has messages"
+    TOPIC_MESSAGE }o--|| TOPIC : "in topic"
+
+    %% USER <-> TOPIC_MESSAGE
+    USER ||--o{ TOPIC_MESSAGE : writes
+    TOPIC_MESSAGE }o--|| USER : author
 ```
