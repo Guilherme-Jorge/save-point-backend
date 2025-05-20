@@ -15,6 +15,7 @@ import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import { APP_FILTER } from '@nestjs/core';
 import { ExceptionFilterGlobal } from './shared/filters/exception-filter-global';
+import { SocialModule } from './social/social.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ExceptionFilterGlobal } from './shared/filters/exception-filter-global'
     OwnershipModule,
     WishlistModule,
     ReviewModule,
+    SocialModule
     // AchievementModule,
     // DirectMessageModule,
     // IgdbWebhookModule,
