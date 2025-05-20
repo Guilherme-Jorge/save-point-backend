@@ -46,9 +46,35 @@ export class SocialService {
     this.followsRepository.save({follower, followed})
 
     return {
-        follower: new UserReturn(follower),
-        followed: new UserReturn(followed)
+        followed: new UserReturn(followed),
+        message: `${followed.username} followed successfully.`
     }
+  }
+
+  async unfollow(socialDto: SocialDto) {
+    const { userId, followerId } = socialDto;
+
+    const alreadyFollowing = await this.followsRepository.findOne({ where: { follower: { id:  userId }, followed: { id: followerId } } })
+    if (!alreadyFollowing) {
+      throw new HttpException(
+        { message: 'You dont follow this user. Refresh your page.'},
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    this.followsRepository.remove(alreadyFollowing);
+
+    return {
+        message: `unfollowed successfully.`
+    }
+  }
+
+  async isFollowing(socialDto: SocialDto) {
+    const { userId, followerId } = socialDto;
+
+    const alreadyFollowing = await this.followsRepository.findOne({ where: { follower: { id:  userId }, followed: { id: followerId } } })
+
+    return alreadyFollowing ? true : false
   }
   
 }

@@ -11,27 +11,16 @@ export class SocialController {
   follow(@Body() socialDto: SocialDto) {
     return this.socialService.follow(socialDto);
   }
-  // deixar de seguir um usuario
+
   @Post('unfollow')
-  unfollow() {
+  unfollow(@Body() socialDto: SocialDto) {
+    return this.socialService.unfollow(socialDto)
+  }
 
+  @Post('following')
+  isFollowing(@Body() socialDto: SocialDto) {
+    return this.socialService.isFollowing(socialDto)
   }
-  // count de seguidores
-  @Get()
-  followers() {
 
-  }
-  // count de seguindo
-  @Get()
-  following() {
-
-  }
-  // is following?
-  @Get('isfollowing')
-  isFollowing() {
-    
-  }
-  // retornar lista de seguidores
-  // retornar lista de seguindo
 }
 
