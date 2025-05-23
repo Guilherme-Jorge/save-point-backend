@@ -76,7 +76,8 @@ export class UserService {
       });
 
     return {
-      message: 'Login successful.',
+      user: new UserReturn(userDB),
+      message: 'Login successful.'
     };
   }
 

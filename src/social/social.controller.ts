@@ -22,5 +22,10 @@ export class SocialController {
     return this.socialService.isFollowing(socialDto)
   }
 
+  @Post('friends/:id')
+  getFriends(@Param('id') userId: string) {
+    return this.socialService.getFriendsList(userId);
+  }
+
 }
 

@@ -69,9 +69,44 @@ export class SocialService {
     }
   }
 
+  async getFriendsList(userId: string) {
+
+    const userDB = await this.userRepository.findOne({ where: { id: userId } })
+    if (!userDB) {
+      throw new HttpException(
+        { message: 'follower Not found'},
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    /** FollowsItem represent a List of {@link follows.entity.ts} */
+    const followsItem = await this.followsRepository.find({ where: { follower: { id:  userId } }, relations: ['followed'] })
+
+    const friendsList: any = [];
+
+    followsItem.map((friend) => friendsList.push(new UserReturn(friend.followed)));
+
+    return friendsList;
+  }
+
   async isFollowing(socialDto: SocialDto) {
     const { userId, followerId } = socialDto;
 
+    const follower = await this.userRepository.findOne({ where: { id: userId } })
+    if (!follower) {
+      throw new HttpException(
+        { message: 'follower Not found'},
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const followed = await this.userRepository.findOne({ where: { id: followerId } })
+    if (!followed) {
+      throw new HttpException(
+        { message: 'followed Not found'},
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const alreadyFollowing = await this.followsRepository.findOne({ where: { follower: { id:  userId }, followed: { id: followerId } } })
 
     return alreadyFollowing ? true : false
