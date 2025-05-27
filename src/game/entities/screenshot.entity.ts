@@ -1,11 +1,12 @@
 import {
   Column,
   Entity,
-  JoinTable,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Game } from './game.entity';
+// import { ImageSizeMap } from 'src/shared/models/igdb-game';
 
 @Entity()
 export class Screenshot {
@@ -18,7 +19,10 @@ export class Screenshot {
   @Column()
   url: string;
 
+  // @Column({ type: 'jsonb' })
+  // urls: ImageSizeMap;
+
   @ManyToOne(() => Game, (game) => game.screenshots, { onDelete: 'CASCADE' })
-  @JoinTable()
+  @JoinColumn()
   game: Game;
 }

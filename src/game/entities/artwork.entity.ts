@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Game } from './game.entity';
+// import { ImageSizeMap } from 'src/shared/models/igdb-game';
 
 @Entity()
 export class Artwork {
@@ -17,6 +18,9 @@ export class Artwork {
 
   @Column()
   url: string;
+
+  // @Column({ type: 'jsonb' })
+  // urls: ImageSizeMap;
 
   @ManyToOne(() => Game, (game) => game.artworks, { onDelete: 'CASCADE' })
   @JoinColumn()

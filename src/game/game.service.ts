@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { ConfigService } from '@nestjs/config';
 import { IgdbGame } from 'src/shared/models/igdb-game';
 import { Genre } from './entities/genre.entity';
 import { GameGenre } from './entities/game-genre.entity';
@@ -73,8 +72,9 @@ export class GameService {
 
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+
     @InjectRepository(InvolvedCompany)
-    private readonly involvedCompanyRepository: Repository<InvolvedCompany>
+    private readonly involvedCompanyRepository: Repository<InvolvedCompany>,
   ) {}
 
   /**
@@ -172,7 +172,8 @@ export class GameService {
       for (const a of igdbGame.artworks) {
         const artwork = this.artworkRepository.create({
           igdbId: a.id,
-          url: 'https:' + a.url,
+          url: a.url,
+          // urls: a.urls,
           game,
         });
         await this.artworkRepository.save(artwork);
@@ -183,7 +184,8 @@ export class GameService {
       for (const s of igdbGame.screenshots) {
         const screenshot = this.screenshotRepository.create({
           igdbId: s.id,
-          url: 'https:' + s.url,
+          url: s.url,
+          // urls: s.urls,
           game,
         });
         await this.screenshotRepository.save(screenshot);
@@ -228,7 +230,7 @@ export class GameService {
         'screenshots',
         'companies',
         'companies.company',
-        'achievements'
+        'achievements',
       ],
     });
 
@@ -242,21 +244,22 @@ export class GameService {
   }
 
   async findAll(): Promise<GameReturn[]> {
-    const games = await this.gameRepository.find({ 
+    const games = await this.gameRepository.find({
       relations: [
-      'genres',
-      'genres.genre',
-      'themes',
-      'themes.theme',
-      'gamemodes',
-      'gamemodes.gamemode',
-      'platforms',
-      'platforms.platform',
-      'artworks',
-      'screenshots',
-      'companies',
-      'companies.company',
-    ]});
+        'genres',
+        'genres.genre',
+        'themes',
+        'themes.theme',
+        'gamemodes',
+        'gamemodes.gamemode',
+        'platforms',
+        'platforms.platform',
+        'artworks',
+        'screenshots',
+        'companies',
+        'companies.company',
+      ],
+    });
     if (!games) {
       throw new NotFoundException('Games not found');
     }
@@ -281,10 +284,10 @@ export class GameService {
       .orderBy('similarity(game.name, :query)', 'DESC')
       .limit(limit)
       .getMany();
-      const gameReturn: GameReturn[] = [];
-      games.map((game) => gameReturn.push(new GameReturn(game)));
-  
-      return gameReturn;
+    const gameReturn: GameReturn[] = [];
+    games.map((game) => gameReturn.push(new GameReturn(game)));
+
+    return gameReturn;
   }
 
   async update(
