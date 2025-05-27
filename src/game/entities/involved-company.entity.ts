@@ -1,7 +1,7 @@
 import {
   Column,
   Entity,
-  JoinTable,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -21,10 +21,10 @@ export class InvolvedCompany {
   role: CompanyRoles;
 
   @ManyToOne(() => Game, (game) => game.companies, { onDelete: 'CASCADE' })
-  @JoinTable()
+  @JoinColumn()
   game: Game;
 
   @ManyToOne(() => Company, (company) => company.games, { onDelete: 'CASCADE' })
-  @JoinTable()
+  @JoinColumn()
   company: Company;
 }
