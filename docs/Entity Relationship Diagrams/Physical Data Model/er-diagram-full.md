@@ -122,6 +122,13 @@ erDiagram
         string game_id FK
     }
 
+    %% Cover from the game
+    COVER {
+        string id PK
+        int igdb_id
+        string url
+    }
+
     %% Achievements from the game
     ACHIEVEMENT {
         string id PK
@@ -229,6 +236,9 @@ erDiagram
 
     %% GAME <-> SCREENSHOT
     GAME ||--o{ SCREENSHOT : has
+
+    %% GAME <-> COVER
+    GAME ||--o| COVER : has
 
     %% GAME <-> ACHIEVEMENT
     GAME ||--o{ ACHIEVEMENT : offers
