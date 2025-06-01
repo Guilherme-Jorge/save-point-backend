@@ -1,7 +1,12 @@
-import { Achievement } from "src/achievement/entities/achievement.entity";
-import { Game } from "../entities/game.entity";
-import { IsArray, IsOptional, IsString, IsDate, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
+import { Game } from '../entities/game.entity';
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  IsDate,
+  IsNumber,
+} from 'class-validator';
 
 /**
  * Dto class to return a specific game
@@ -15,13 +20,29 @@ export class GameReturn {
     this.releaseDate = game.releaseDate;
     this.achievements = game.achievements || [];
 
-    this.genres = game.genres ? game.genres.map(genre => genre.genre.name) : [];
-    this.themes = game.themes ? game.themes.map(theme => theme.theme.name) : [];
-    this.gamemodes = game.gamemodes ? game.gamemodes.map(gamemode => gamemode.gamemode.name) : [];
-    this.platforms = game.platforms ? game.platforms.map(platform => platform.platform.name) : [];
-    this.companies = game.companies ? game.companies.map(company => company.company.name) : [];
-    this.artworks = game.artworks ? game.artworks.map(artwork => artwork.url) : [];
-    this.screenshots = game.screenshots ? game.screenshots.map(screenshot => screenshot.url) : [];
+    this.genres = game.genres
+      ? game.genres.map((genre) => genre.genre.name)
+      : [];
+    this.themes = game.themes
+      ? game.themes.map((theme) => theme.theme.name)
+      : [];
+    this.gamemodes = game.gamemodes
+      ? game.gamemodes.map((gamemode) => gamemode.gamemode.name)
+      : [];
+    this.platforms = game.platforms
+      ? game.platforms.map((platform) => platform.platform.name)
+      : [];
+    this.companies = game.companies
+      ? game.companies.map((company) => company.company.name)
+      : [];
+    this.artworks = game.artworks
+      ? game.artworks.map((artwork) => artwork.url)
+      : [];
+    this.screenshots = game.screenshots
+      ? game.screenshots.map((screenshot) => screenshot.url)
+      : [];
+
+    this.cover = game.cover.url;
   }
 
   @IsOptional()
@@ -62,6 +83,10 @@ export class GameReturn {
 
   @IsArray()
   screenshots: string[] = [];
+
+  @IsOptional()
+  @IsString()
+  cover?: string;
 
   @IsOptional()
   @IsArray()

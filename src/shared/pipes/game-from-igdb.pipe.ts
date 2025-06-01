@@ -26,27 +26,29 @@ export class GameFromIgdbPipe
     }
 
     const query = `
-      fields id, 
-             name, 
-             summary, 
-             first_release_date, 
-             platforms.id, 
-             platforms.name, 
-             genres.id, 
-             genres.name, 
-             themes.id, 
-             themes.name, 
-             game_modes.id, 
-             game_modes.name, 
-             involved_companies.id, 
-             involved_companies.developer, 
-             involved_companies.publisher, 
-             involved_companies.company.id, 
-             involved_companies.company.name, 
-             artworks.id, 
-             artworks.url, 
-             screenshots.id, 
-             screenshots.url;
+      fields id,
+             name,
+             summary,
+             first_release_date,
+             platforms.id,
+             platforms.name,
+             genres.id,
+             genres.name,
+             themes.id,
+             themes.name,
+             game_modes.id,
+             game_modes.name,
+             involved_companies.id,
+             involved_companies.developer,
+             involved_companies.publisher,
+             involved_companies.company.id,
+             involved_companies.company.name,
+             artworks.id,
+             artworks.image_id,
+             screenshots.id,
+             screenshots.image_id,
+             cover.id,
+             cover.image_id;
       where id = ${id};
     `;
 
@@ -63,8 +65,8 @@ export class GameFromIgdbPipe
           headers,
           // just in development. Vulnerable to 'man-in-the-middle'.
           httpsAgent: new https.Agent({
-            rejectUnauthorized: false
-          })
+            rejectUnauthorized: false,
+          }),
         }),
       );
 

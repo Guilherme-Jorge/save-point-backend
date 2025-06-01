@@ -13,6 +13,7 @@ import { Genre } from './entities/genre.entity';
 import { InvolvedCompany } from './entities/involved-company.entity';
 import { Platform } from './entities/platform.entity';
 import { Screenshot } from './entities/screenshot.entity';
+import { Cover } from './entities/cover.entity';
 import { Theme } from './entities/theme.entity';
 import { ConfigModule } from '@nestjs/config';
 import igdbConfig from 'src/config/igdb.config';
@@ -35,6 +36,7 @@ import { Artwork } from './entities/artwork.entity';
       Platform,
       Artwork,
       Screenshot,
+      Cover,
       Theme,
     ]),
     HttpModule,

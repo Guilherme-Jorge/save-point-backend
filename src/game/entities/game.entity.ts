@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameGenre } from './game-genre.entity';
@@ -12,6 +13,7 @@ import { GamePlatform } from './game-platform.entity';
 import { InvolvedCompany } from './involved-company.entity';
 import { Artwork } from './artwork.entity';
 import { Screenshot } from './screenshot.entity';
+import { Cover } from './cover.entity';
 import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
 import { Ownership } from 'src/ownership/entities/ownership.entity';
 import { Achievement } from 'src/achievement/entities/achievement.entity';
@@ -66,6 +68,9 @@ export class Game {
 
   @OneToMany(() => Screenshot, (screenshot) => screenshot.game)
   screenshots: Screenshot[];
+
+  @OneToOne(() => Cover, (cover) => cover.game)
+  cover: Cover;
 
   @OneToMany(() => Achievement, (achievement) => achievement.game)
   achievements: Achievement[];

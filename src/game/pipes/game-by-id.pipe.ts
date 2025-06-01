@@ -11,7 +11,9 @@ import { validate as isUuid } from 'uuid';
 import { GameReturn } from '../dto/game-return.dto';
 
 @Injectable()
-export class GameByIdPipe implements PipeTransform<string, Promise<GameReturn>> {
+export class GameByIdPipe
+  implements PipeTransform<string, Promise<GameReturn>>
+{
   constructor(
     @InjectRepository(Game)
     private readonly gameRepository: Repository<Game>,
@@ -22,7 +24,7 @@ export class GameByIdPipe implements PipeTransform<string, Promise<GameReturn>> 
       throw new BadRequestException(`Invalid UUID: ${value}`);
     }
 
-    const game = await this.gameRepository.findOne({ 
+    const game = await this.gameRepository.findOne({
       where: { id: value },
       relations: [
         'genres',
@@ -35,10 +37,12 @@ export class GameByIdPipe implements PipeTransform<string, Promise<GameReturn>> 
         'platforms.platform',
         'artworks',
         'screenshots',
+        'cover',
         'companies',
         'companies.company',
-        'achievements'
-      ]});
+        'achievements',
+      ],
+    });
     if (!game) {
       throw new NotFoundException(`Game with id ${value} not found`);
     }

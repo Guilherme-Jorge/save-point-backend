@@ -19,6 +19,7 @@ import { GameGamemode } from './entities/game-gamemode.entity';
 import { Platform } from './entities/platform.entity';
 import { GamePlatform } from './entities/game-platform.entity';
 import { Screenshot } from './entities/screenshot.entity';
+import { Cover } from './entities/cover.entity';
 import { Company } from './entities/company.entity';
 import { InvolvedCompany } from './entities/involved-company.entity';
 import { CompanyRoles } from './enums/company-roles.enum';
@@ -69,6 +70,9 @@ export class GameService {
 
     @InjectRepository(Screenshot)
     private readonly screenshotRepository: Repository<Screenshot>,
+
+    @InjectRepository(Cover)
+    private readonly coverRepository: Repository<Cover>,
 
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
@@ -172,6 +176,7 @@ export class GameService {
       for (const a of igdbGame.artworks) {
         const artwork = this.artworkRepository.create({
           igdbId: a.id,
+          imageId: a.image_id,
           url: a.url,
           // urls: a.urls,
           game,
@@ -184,12 +189,26 @@ export class GameService {
       for (const s of igdbGame.screenshots) {
         const screenshot = this.screenshotRepository.create({
           igdbId: s.id,
+          imageId: s.image_id,
           url: s.url,
           // urls: s.urls,
           game,
         });
         await this.screenshotRepository.save(screenshot);
       }
+    }
+
+    if (igdbGame.cover) {
+      const c = igdbGame.cover;
+      const cover = this.coverRepository.create({
+        igdbId: c.id,
+        imageId: c.image_id,
+        url: c.url,
+        // urls: c.urls,
+        game,
+      });
+
+      await this.coverRepository.save(cover);
     }
 
     if (igdbGame.involvedCompanies) {
@@ -228,6 +247,7 @@ export class GameService {
         'platforms.platform',
         'artworks',
         'screenshots',
+        'cover',
         'companies',
         'companies.company',
         'achievements',
@@ -256,6 +276,7 @@ export class GameService {
         'platforms.platform',
         'artworks',
         'screenshots',
+        'cover',
         'companies',
         'companies.company',
       ],
