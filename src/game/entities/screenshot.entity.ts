@@ -17,6 +17,9 @@ export class Screenshot {
   igdbId: number;
 
   @Column()
+  imageId: string;
+
+  @Column()
   url: string;
 
   // @Column({ type: 'jsonb' })

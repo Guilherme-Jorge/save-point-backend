@@ -17,6 +17,9 @@ export class Artwork {
   igdbId: number;
 
   @Column()
+  imageId: string;
+
+  @Column()
   url: string;
 
   // @Column({ type: 'jsonb' })
