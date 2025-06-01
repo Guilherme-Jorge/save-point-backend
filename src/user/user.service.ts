@@ -149,12 +149,12 @@ export class UserService {
     });
 
     // link to reset the password
-    const link = `http:localhost:5173/forgotpass?token=${token}`
+    const link = `http://localhost:5173/Forgotpsw2/?token=${token}`
 
     const emailOptions = {
         recipents: [email],
         subject: "SavePoint - Recuperar Senha",
-        html: `<p>Se deseja recuperar a sua senha, acesse este link: <a>${link}</a></p><br><i>Atenção, você terá apenas 1 hora para alterar sua senha.</i><br><p>Se não foi você, desconsidere a mensagem.</p>`
+        html: `<p>Se deseja recuperar a sua senha, acesse este link: <a href="${link}">${link}</a></p><br><i>Atenção, você terá apenas 1 hora para alterar sua senha.</i><br><p>Se não foi você, desconsidere a mensagem.</p>`
     }
 
     this.emailService.sendEmail(emailOptions);
