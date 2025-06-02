@@ -18,31 +18,32 @@ export class GameReturn {
     this.name = game.name;
     this.summary = game.summary;
     this.releaseDate = game.releaseDate;
-    this.achievements = game.achievements || [];
+    this.cover = game.cover ? game.cover.url : undefined;
 
     this.genres = game.genres
       ? game.genres.map((genre) => genre.genre.name)
-      : [];
+      : undefined;
     this.themes = game.themes
       ? game.themes.map((theme) => theme.theme.name)
-      : [];
+      : undefined;
     this.gamemodes = game.gamemodes
       ? game.gamemodes.map((gamemode) => gamemode.gamemode.name)
-      : [];
+      : undefined;
     this.platforms = game.platforms
       ? game.platforms.map((platform) => platform.platform.name)
-      : [];
+      : undefined;
     this.companies = game.companies
       ? game.companies.map((company) => company.company.name)
-      : [];
+      : undefined;
     this.artworks = game.artworks
       ? game.artworks.map((artwork) => artwork.url)
-      : [];
+      : undefined;
     this.screenshots = game.screenshots
       ? game.screenshots.map((screenshot) => screenshot.url)
-      : [];
-
-    this.cover = game.cover.url;
+      : undefined;
+    this.achievements = game.achievements
+      ? game.achievements.map((achievement) => achievement)
+      : undefined;
   }
 
   @IsOptional()
@@ -64,31 +65,29 @@ export class GameReturn {
   releaseDate?: Date;
 
   @IsArray()
-  genres: string[] = [];
+  genres?: string[] = [];
 
   @IsArray()
-  themes: string[] = [];
+  themes?: string[] = [];
 
   @IsArray()
-  gamemodes: string[] = [];
+  gamemodes?: string[] = [];
 
   @IsArray()
-  platforms: string[] = [];
+  platforms?: string[] = [];
 
   @IsArray()
-  companies: string[] = [];
+  companies?: string[] = [];
 
   @IsArray()
-  artworks: string[] = [];
+  artworks?: string[] = [];
 
   @IsArray()
-  screenshots: string[] = [];
+  screenshots?: string[] = [];
 
-  @IsOptional()
-  @IsString()
-  cover?: string;
-
-  @IsOptional()
   @IsArray()
   achievements?: Achievement[] = [];
+
+  @IsString()
+  cover?: string;
 }

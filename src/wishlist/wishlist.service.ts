@@ -48,7 +48,7 @@ export class WishlistService {
     }
 
     this.wishlistRepository.save({ user, game })
-
+    console.log(game)
     return {
       user: new UserReturn(user),
       game: new GameReturn(game)
@@ -78,7 +78,9 @@ export class WishlistService {
         'game.screenshots',
         'game.companies',
         'game.companies.company',
-        'game.achievements']});
+        'game.achievements',
+        'game.cover'
+      ]});
 
     const gameReturn: any = [];
 
