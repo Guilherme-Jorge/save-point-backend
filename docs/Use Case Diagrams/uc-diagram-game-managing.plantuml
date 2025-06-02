@@ -1,0 +1,17 @@
+@startuml
+title Gerenciamento de Jogos
+
+actor Usuário
+
+Usuário --> (Visualizar Tela Principal)
+Usuário --> (Visualizar Biblioteca Pessoal)
+Usuário --> (Visualizar Página do Jogo)
+Usuário --> (Ministrar Jogo na Biblioteca)
+
+Usuário --> (Adicionar Jogo por Texto)
+Usuário --> (Adicionar Jogo por Imagem da Capa)
+Usuário --> (Adicionar Jogos por Vínculo de Conta)
+
+Usuário --> (Receber Recomendações de Jogos)
+
+@enduml

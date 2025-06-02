@@ -1,0 +1,19 @@
+@startuml
+title Interações Sociais
+
+actor Usuário
+
+Usuário --> (Avaliar Jogo)
+Usuário --> (Reagir à Avaliação)
+Usuário --> (Comentar Avaliação)
+Usuário --> (Reportar Avaliação)
+
+Usuário --> (Visualizar Perfil de Outro Usuário)
+Usuário --> (Seguir Usuário)
+Usuário --> (Enviar Mensagem)
+
+Usuário --> (Criar Tópico no Fórum)
+Usuário --> (Responder em Tópico do Fórum)
+Usuário --> (Ministrar Tópico)
+
+@enduml
