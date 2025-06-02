@@ -17,7 +17,7 @@ export default (): PostgresConnectionOptions => ({
 
   entities: [path.resolve(__dirname, '..') + '/**/*.entity{.ts,.js}'],
   migrations: [path.resolve(__dirname, '..') + '/migrations/*{.ts,.js}'],
-  migrationsRun: true,
+  migrationsRun: false,
 
   // If the Node.JS environment is production, don't use synchronize
   synchronize: process.env.NODE_ENV === 'production' ? false : true,
