@@ -25,7 +25,7 @@ export class Cover {
   // @Column({ type: 'jsonb' })
   // urls: ImageSizeMap;
 
-  @OneToOne(() => Game, (game) => game.cover)
+  @OneToOne(() => Game, (game) => game.cover, { onDelete: 'CASCADE' })
   @JoinColumn()
   game: Game;
 }
