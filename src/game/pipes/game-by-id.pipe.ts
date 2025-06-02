@@ -41,6 +41,7 @@ export class GameByIdPipe
         'companies',
         'companies.company',
         'achievements',
+        'game.cover'
       ],
     });
     if (!game) {
