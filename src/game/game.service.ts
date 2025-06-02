@@ -250,8 +250,7 @@ export class GameService {
         'cover',
         'companies',
         'companies.company',
-        'achievements',
-        'game.cover'
+        'achievements'
       ],
     });
 
@@ -279,8 +278,7 @@ export class GameService {
         'screenshots',
         'cover',
         'companies',
-        'companies.company',
-        'game.cover'
+        'companies.company'
       ],
     });
     if (!games) {

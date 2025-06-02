@@ -40,8 +40,7 @@ export class GameByIdPipe
         'cover',
         'companies',
         'companies.company',
-        'achievements',
-        'game.cover'
+        'achievements'
       ],
     });
     if (!game) {
