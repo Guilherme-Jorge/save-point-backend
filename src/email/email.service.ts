@@ -54,7 +54,7 @@ export class EmailService {
     }
 
     /**
-     * This function uses MailerSend (https://www.mailersend.com/) SMTP free service to send anonymous emails.
+     * This function uses MailerSend (https://www.mailersend.com/) SMTP free trial service to send anonymous emails.
      * Use the .env credentials (linked by Enrico).
      */
     // async sendEmail_MailerSend(emailTarget: string, subject: string, html: string, emailName?: string) {
