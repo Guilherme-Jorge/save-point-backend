@@ -12,7 +12,7 @@ export class WishlistController {
     return this.wishlistService.addToWishlist(wishlistDto);
   }
 
-  @Get(':id')
+  @Get(':userId')
   getAll(@Param('userId') userId: string) {
     return this.wishlistService.getAllByUserId(userId);
   }
