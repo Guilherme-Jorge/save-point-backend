@@ -1,13 +1,26 @@
-import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserSignIn } from './dto/userSignIn.dto';
 import { UserRegister } from './dto/userRegister.dto';
 import { UserUpdate } from './dto/userUpdate.dto';
 import { HashPasswordPipe } from 'src/shared/pipes/hash-password.pipe';
+import { UserByIdPipe } from './pipes/user-by-id.pipe';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+
+  @Get()
+  findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get(':id')
+  findById(@Param('id', UserByIdPipe) user: User[]) {
+    return user
+  }
 
   @Post('register')
   async registerUser(@Body() user: UserRegister, @Body('password', HashPasswordPipe) hashPassword: string) {

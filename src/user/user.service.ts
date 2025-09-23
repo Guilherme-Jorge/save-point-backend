@@ -212,6 +212,19 @@ export class UserService {
     return user;
   }
 
+
+  async findAll() {
+    const users = await this.userRepository.find();
+
+    if (!users)
+      throw new HttpException(
+        { message: 'Users not found.' },
+        HttpStatus.NOT_FOUND,
+      );
+
+    return users;
+  }
+
   /**
    * This function find a user by email
    * @param email user email
