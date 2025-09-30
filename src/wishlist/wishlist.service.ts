@@ -48,7 +48,6 @@ export class WishlistService {
     }
 
     this.wishlistRepository.save({ user, game })
-    console.log(game)
     return {
       user: new UserReturn(user),
       game: new GameReturn(game)

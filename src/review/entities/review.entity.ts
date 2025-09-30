@@ -1,5 +1,5 @@
-import { Game } from 'src/game/entities/game.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Game } from "src/game/entities/game.entity";
+import { User } from "src/user/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -8,29 +8,29 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class Review {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: "boolean" })
   rating: boolean;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   reviewText?: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.reviews, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.reviews, { onDelete: "CASCADE" })
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Game, (game) => game.reviews, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Game, (game) => game.reviews, { onDelete: "CASCADE" })
   game: Game;
 }
