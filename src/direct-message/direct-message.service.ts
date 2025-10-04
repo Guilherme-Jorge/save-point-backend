@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
-import { UpdateDirectMessageDto } from './dto/update-direct-message.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateDirectMessageDto } from "./dto/create-direct-message.dto";
+import { UpdateDirectMessageDto } from "./dto/update-direct-message.dto";
 
 @Injectable()
 export class DirectMessageService {
   create(createDirectMessageDto: CreateDirectMessageDto) {
-    return 'This action adds a new directMessage';
+    return "This action adds a new directMessage";
   }
 
   findAll() {

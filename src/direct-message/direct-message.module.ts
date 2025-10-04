@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { DirectMessageService } from './direct-message.service';
-import { DirectMessageGateway } from './direct-message.gateway';
+import { Module } from "@nestjs/common";
+import { DirectMessageService } from "./direct-message.service";
+import { DirectMessageGateway } from "./direct-message.gateway";
 
 @Module({
   providers: [DirectMessageGateway, DirectMessageService],

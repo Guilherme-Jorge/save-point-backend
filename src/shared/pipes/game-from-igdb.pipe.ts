@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
   PipeTransform,
-} from '@nestjs/common';
-import { IgdbGame, IgdbGameInterface } from '../models/igdb-game';
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
+} from "@nestjs/common";
+import { IgdbGame, IgdbGameInterface } from "../models/igdb-game";
+import { HttpService } from "@nestjs/axios";
+import { ConfigService } from "@nestjs/config";
+import { firstValueFrom } from "rxjs";
 
 @Injectable()
 export class GameFromIgdbPipe
@@ -52,15 +52,15 @@ export class GameFromIgdbPipe
     `;
 
     const headers = {
-      'Client-ID': this.configService.get<string>('igdb.clientId'),
-      Authorization: `Bearer ${this.configService.get<string>('igdb.accessToken')}`,
-      Accept: 'application/json',
+      "Client-ID": this.configService.get<string>("igdb.clientId"),
+      Authorization: `Bearer ${this.configService.get<string>("igdb.accessToken")}`,
+      Accept: "application/json",
     };
 
     try {
       // Send POST request to IGDB
       const response = await firstValueFrom(
-        this.httpService.post('https://api.igdb.com/v4/games', query, {
+        this.httpService.post("https://api.igdb.com/v4/games", query, {
           headers,
         }),
       );
@@ -78,7 +78,7 @@ export class GameFromIgdbPipe
 
       return gameData;
     } catch (error) {
-      console.error('Error fetching game details:', error);
+      console.error("Error fetching game details:", error);
       throw error;
     }
   }

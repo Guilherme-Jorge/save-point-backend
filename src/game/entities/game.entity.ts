@@ -5,23 +5,23 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { GameGenre } from './game-genre.entity';
-import { GameTheme } from './game-theme.entity';
-import { GameGamemode } from './game-gamemode.entity';
-import { GamePlatform } from './game-platform.entity';
-import { InvolvedCompany } from './involved-company.entity';
-import { Artwork } from './artwork.entity';
-import { Screenshot } from './screenshot.entity';
-import { Cover } from './cover.entity';
-import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
-import { Ownership } from 'src/ownership/entities/ownership.entity';
-import { Achievement } from 'src/achievement/entities/achievement.entity';
-import { Review } from 'src/review/entities/review.entity';
+} from "typeorm";
+import { GameGenre } from "./game-genre.entity";
+import { GameTheme } from "./game-theme.entity";
+import { GameGamemode } from "./game-gamemode.entity";
+import { GamePlatform } from "./game-platform.entity";
+import { InvolvedCompany } from "./involved-company.entity";
+import { Artwork } from "./artwork.entity";
+import { Screenshot } from "./screenshot.entity";
+import { Cover } from "./cover.entity";
+import { Wishlist } from "src/wishlist/entities/wishlist.entity";
+import { Ownership } from "src/ownership/entities/ownership.entity";
+import { Achievement } from "src/achievement/entities/achievement.entity";
+import { Review } from "src/review/entities/review.entity";
 
 @Entity()
 export class Game {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ unique: true })
@@ -30,13 +30,13 @@ export class Game {
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   summary?: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: "date", nullable: true })
   releaseDate?: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
   @OneToMany(() => Ownership, (ownership) => ownership.game)

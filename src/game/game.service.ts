@@ -1,30 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Game } from './entities/game.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Game } from "./entities/game.entity";
 import {
   DeepPartial,
   FindOptionsWhere,
   Repository,
   UpdateResult,
-} from 'typeorm';
-import { CreateGameDto } from './dto/create-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
-import { IgdbGame } from 'src/shared/models/igdb-game';
-import { Genre } from './entities/genre.entity';
-import { GameGenre } from './entities/game-genre.entity';
-import { Theme } from './entities/theme.entity';
-import { GameTheme } from './entities/game-theme.entity';
-import { Gamemode } from './entities/gamemode.entity';
-import { GameGamemode } from './entities/game-gamemode.entity';
-import { Platform } from './entities/platform.entity';
-import { GamePlatform } from './entities/game-platform.entity';
-import { Screenshot } from './entities/screenshot.entity';
-import { Cover } from './entities/cover.entity';
-import { Company } from './entities/company.entity';
-import { InvolvedCompany } from './entities/involved-company.entity';
-import { CompanyRoles } from './enums/company-roles.enum';
-import { Artwork } from './entities/artwork.entity';
-import { GameReturn } from './dto/game-return.dto';
+} from "typeorm";
+import { CreateGameDto } from "./dto/create-game.dto";
+import { UpdateGameDto } from "./dto/update-game.dto";
+import { IgdbGame } from "src/shared/models/igdb-game";
+import { Genre } from "./entities/genre.entity";
+import { GameGenre } from "./entities/game-genre.entity";
+import { Theme } from "./entities/theme.entity";
+import { GameTheme } from "./entities/game-theme.entity";
+import { Gamemode } from "./entities/gamemode.entity";
+import { GameGamemode } from "./entities/game-gamemode.entity";
+import { Platform } from "./entities/platform.entity";
+import { GamePlatform } from "./entities/game-platform.entity";
+import { Screenshot } from "./entities/screenshot.entity";
+import { Cover } from "./entities/cover.entity";
+import { Company } from "./entities/company.entity";
+import { InvolvedCompany } from "./entities/involved-company.entity";
+import { CompanyRoles } from "./enums/company-roles.enum";
+import { Artwork } from "./entities/artwork.entity";
+import { GameReturn } from "./dto/game-return.dto";
 
 function getThreshold(length: number): number {
   if (length <= 3) {
@@ -237,20 +237,20 @@ export class GameService {
     const fullGame = await this.gameRepository.findOne({
       where: { id: game.id },
       relations: [
-        'genres',
-        'genres.genre',
-        'themes',
-        'themes.theme',
-        'gamemodes',
-        'gamemodes.gamemode',
-        'platforms',
-        'platforms.platform',
-        'artworks',
-        'screenshots',
-        'cover',
-        'companies',
-        'companies.company',
-        'achievements'
+        "genres",
+        "genres.genre",
+        "themes",
+        "themes.theme",
+        "gamemodes",
+        "gamemodes.gamemode",
+        "platforms",
+        "platforms.platform",
+        "artworks",
+        "screenshots",
+        "cover",
+        "companies",
+        "companies.company",
+        "achievements",
       ],
     });
 
@@ -266,23 +266,23 @@ export class GameService {
   async findAll(): Promise<GameReturn[]> {
     const games = await this.gameRepository.find({
       relations: [
-        'genres',
-        'genres.genre',
-        'themes',
-        'themes.theme',
-        'gamemodes',
-        'gamemodes.gamemode',
-        'platforms',
-        'platforms.platform',
-        'artworks',
-        'screenshots',
-        'cover',
-        'companies',
-        'companies.company'
+        "genres",
+        "genres.genre",
+        "themes",
+        "themes.theme",
+        "gamemodes",
+        "gamemodes.gamemode",
+        "platforms",
+        "platforms.platform",
+        "artworks",
+        "screenshots",
+        "cover",
+        "companies",
+        "companies.company",
       ],
     });
     if (!games) {
-      throw new NotFoundException('Games not found');
+      throw new NotFoundException("Games not found");
     }
 
     const gameReturn: GameReturn[] = [];
@@ -296,13 +296,13 @@ export class GameService {
     const threshold = getThreshold(query.length);
 
     const games = await this.gameRepository
-      .createQueryBuilder('game')
-      .where('game.name % :query', { query })
-      .andWhere('similarity(game.name, :name) > :threshold', {
+      .createQueryBuilder("game")
+      .where("game.name % :query", { query })
+      .andWhere("similarity(game.name, :name) > :threshold", {
         query,
         threshold,
       })
-      .orderBy('similarity(game.name, :query)', 'DESC')
+      .orderBy("similarity(game.name, :query)", "DESC")
       .limit(limit)
       .getMany();
     const gameReturn: GameReturn[] = [];

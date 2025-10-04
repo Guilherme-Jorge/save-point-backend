@@ -4,13 +4,13 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Game } from './game.entity';
+} from "typeorm";
+import { Game } from "./game.entity";
 // import { ImageSizeMap } from 'src/shared/models/igdb-game';
 
 @Entity()
 export class Cover {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ unique: true })
@@ -25,7 +25,7 @@ export class Cover {
   // @Column({ type: 'jsonb' })
   // urls: ImageSizeMap;
 
-  @OneToOne(() => Game, (game) => game.cover, { onDelete: 'CASCADE' })
+  @OneToOne(() => Game, (game) => game.cover, { onDelete: "CASCADE" })
   @JoinColumn()
   game: Game;
 }

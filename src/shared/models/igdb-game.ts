@@ -1,4 +1,4 @@
-import { ImageSizes } from 'src/game/enums/image-sizes.enum';
+import { ImageSizes } from "src/game/enums/image-sizes.enum";
 
 export interface IgdbGameInterface {
   id: number;

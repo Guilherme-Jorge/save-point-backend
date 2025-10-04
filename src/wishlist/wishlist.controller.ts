@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { WishlistService } from './wishlist.service';
-import { WishlistDto } from './dto/wishlist.dto';
-import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
+import { WishlistService } from "./wishlist.service";
+import { WishlistDto } from "./dto/wishlist.dto";
+import { UpdateWishlistDto } from "./dto/update-wishlist.dto";
 
-@Controller('wishlist')
+@Controller("wishlist")
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
@@ -12,8 +20,8 @@ export class WishlistController {
     return this.wishlistService.addToWishlist(wishlistDto);
   }
 
-  @Get(':userId')
-  getAll(@Param('userId') userId: string) {
+  @Get(":userId")
+  getAll(@Param("userId") userId: string) {
     return this.wishlistService.getAllByUserId(userId);
   }
 

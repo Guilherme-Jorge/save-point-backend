@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
   PipeTransform,
-} from '@nestjs/common';
-import { Ownership } from '../entities/ownership.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { isUUID } from 'class-validator';
+} from "@nestjs/common";
+import { Ownership } from "../entities/ownership.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { isUUID } from "class-validator";
 
 @Injectable()
 export class OwnershipsByGameIdPipe

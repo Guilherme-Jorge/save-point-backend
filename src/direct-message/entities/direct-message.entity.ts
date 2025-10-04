@@ -1,4 +1,4 @@
-import { User } from 'src/user/entities/user.entity';
+import { User } from "src/user/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -7,29 +7,29 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
 @Entity()
 export class DirectMessage {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: "text" })
   message: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.sentMessage, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'senderId' })
+  @ManyToOne(() => User, (user) => user.sentMessage, { onDelete: "CASCADE" })
+  @JoinColumn({ name: "senderId" })
   sender: User;
 
   @ManyToOne(() => User, (user) => user.receivedMessage, {
-    onDelete: 'CASCADE',
+    onDelete: "CASCADE",
   })
-  @JoinColumn({ name: 'receiverId' })
+  @JoinColumn({ name: "receiverId" })
   receiver: User;
 }

@@ -1,4 +1,4 @@
-import { Game } from 'src/game/entities/game.entity';
+import { Game } from "src/game/entities/game.entity";
 import {
   Column,
   Entity,
@@ -6,24 +6,24 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { UserAchievement } from './user-achievement.entity';
+} from "typeorm";
+import { UserAchievement } from "./user-achievement.entity";
 
 @Entity()
 export class Achievement {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   description?: string;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: "float", nullable: true })
   rarity?: number;
 
-  @ManyToOne(() => Game, (game) => game.achievements, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Game, (game) => game.achievements, { onDelete: "CASCADE" })
   @JoinColumn()
   game: Game;
 

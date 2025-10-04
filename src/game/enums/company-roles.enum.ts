@@ -1,4 +1,4 @@
 export enum CompanyRoles {
-  DEVELOPER = 'developer',
-  PUBLISHER = 'publisher',
+  DEVELOPER = "developer",
+  PUBLISHER = "publisher",
 }

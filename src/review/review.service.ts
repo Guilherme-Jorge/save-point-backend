@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
-import { Review } from './entities/review.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateReviewDto } from "./dto/create-review.dto";
+import { UpdateReviewDto } from "./dto/update-review.dto";
+import { Review } from "./entities/review.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class ReviewService {
@@ -19,7 +19,7 @@ export class ReviewService {
   async findAll(): Promise<Review[]> {
     const reviews = await this.reviewRepository.find();
     if (!reviews) {
-      throw new NotFoundException('Reviews not found');
+      throw new NotFoundException("Reviews not found");
     }
 
     return reviews;

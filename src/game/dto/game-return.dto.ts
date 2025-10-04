@@ -1,12 +1,12 @@
-import { Achievement } from 'src/achievement/entities/achievement.entity';
-import { Game } from '../entities/game.entity';
+import { Achievement } from "src/achievement/entities/achievement.entity";
+import { Game } from "../entities/game.entity";
 import {
   IsArray,
   IsOptional,
   IsString,
   IsDate,
   IsNumber,
-} from 'class-validator';
+} from "class-validator";
 
 /**
  * Dto class to return a specific game

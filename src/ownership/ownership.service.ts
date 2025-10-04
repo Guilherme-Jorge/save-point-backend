@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateOwnershipDto } from './dto/create-ownership.dto';
-import { UpdateOwnershipDto } from './dto/update-ownership.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Ownership } from './entities/ownership.entity';
-import { Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateOwnershipDto } from "./dto/create-ownership.dto";
+import { UpdateOwnershipDto } from "./dto/update-ownership.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Ownership } from "./entities/ownership.entity";
+import { Repository } from "typeorm";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class OwnershipService {
@@ -22,7 +22,7 @@ export class OwnershipService {
   async findAll(): Promise<Ownership[]> {
     const ownerships = await this.ownershipRepository.find();
     if (!ownerships) {
-      throw new NotFoundException('Ownerships not found');
+      throw new NotFoundException("Ownerships not found");
     }
 
     return ownerships;

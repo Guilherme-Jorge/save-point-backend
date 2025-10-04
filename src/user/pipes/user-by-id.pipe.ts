@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
   PipeTransform,
-} from '@nestjs/common';
-import { User } from '../entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { isUUID } from 'class-validator';
+} from "@nestjs/common";
+import { User } from "../entities/user.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { isUUID } from "class-validator";
 
 @Injectable()
 export class UserByIdPipe implements PipeTransform<string, Promise<User>> {

@@ -4,13 +4,13 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Game } from './game.entity';
+} from "typeorm";
+import { Game } from "./game.entity";
 // import { ImageSizeMap } from 'src/shared/models/igdb-game';
 
 @Entity()
 export class Screenshot {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ unique: true })
@@ -25,7 +25,7 @@ export class Screenshot {
   // @Column({ type: 'jsonb' })
   // urls: ImageSizeMap;
 
-  @ManyToOne(() => Game, (game) => game.screenshots, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Game, (game) => game.screenshots, { onDelete: "CASCADE" })
   @JoinColumn()
   game: Game;
 }

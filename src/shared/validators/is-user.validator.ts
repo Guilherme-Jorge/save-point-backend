@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import {
   isUUID,
   registerDecorator,
@@ -7,9 +7,9 @@ import {
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
-} from 'class-validator';
-import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
+} from "class-validator";
+import { User } from "src/user/entities/user.entity";
+import { Repository } from "typeorm";
 
 @ValidatorConstraint({ async: true })
 @Injectable()

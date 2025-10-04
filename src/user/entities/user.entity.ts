@@ -1,8 +1,8 @@
-import { UserAchievement } from 'src/achievement/entities/user-achievement.entity';
-import { Ownership } from 'src/ownership/entities/ownership.entity';
-import { Wishlist } from 'src/wishlist/entities/wishlist.entity';
-import { DirectMessage } from 'src/direct-message/entities/direct-message.entity';
-import { Follows } from 'src/social/entities/follows.entity';
+import { UserAchievement } from "src/achievement/entities/user-achievement.entity";
+import { Ownership } from "src/ownership/entities/ownership.entity";
+import { Wishlist } from "src/wishlist/entities/wishlist.entity";
+import { DirectMessage } from "src/direct-message/entities/direct-message.entity";
+import { Follows } from "src/social/entities/follows.entity";
 import {
   Column,
   CreateDateColumn,
@@ -10,12 +10,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import { Review } from 'src/review/entities/review.entity';
+} from "typeorm";
+import { Review } from "src/review/entities/review.entity";
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -30,13 +30,13 @@ export class User {
   @Column({ nullable: true })
   forgotPassToken?: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   forgotPassExpires?: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
   @OneToMany(() => Ownership, (ownership) => ownership.user)
