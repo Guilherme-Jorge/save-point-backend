@@ -18,6 +18,7 @@ import { ExceptionFilterGlobal } from "./shared/filters/exception-filter-global"
 import { SocialModule } from "./social/social.module";
 import { GatewayModule } from "./gateway/gateway.module";
 import { ChatModule } from "./chat/chat.module";
+// import { CoverMatcherModule } from './cover-matcher/cover-matcher.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ChatModule } from "./chat/chat.module";
     SocialModule,
     GatewayModule,
     ChatModule,
+    // CoverMatcherModule,
     // AchievementModule,
     // DirectMessageModule,
     // IgdbWebhookModule,
