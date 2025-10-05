@@ -102,7 +102,7 @@ export class ChatService {
   }
 
   async sendMessage(chatId: string, userId: string, message: string) {
-    const chat = await this.chatRepository.findOne({
+    let chat = await this.chatRepository.findOne({
       where: [
         { id: chatId, user1: { id: userId } },
         { id: chatId, user2: { id: userId } },
@@ -113,9 +113,13 @@ export class ChatService {
       throw new NotFoundException("Chat not founded");
     }
 
+    chat.lastMessage = message;
+    chat = await this.chatRepository.save(chat);
+
     const user = await this.userRepository.findOneBy({
       id: userId,
     });
+
     if (!user) {
       throw new NotFoundException("User not founded.");
     }

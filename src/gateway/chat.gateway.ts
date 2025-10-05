@@ -57,6 +57,7 @@ export class ChatGateway {
 
     await this.chatService.sendMessage(data.chatId, userSenderId, data.message);
     console.log("Message saved in DB");
+
     const socketDestinationId = this.userSocketMap.get(data.destinationId);
     if (socketDestinationId) {
       this.server.to(socketDestinationId).emit("chat", {
