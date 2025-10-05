@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Review } from "src/review/entities/review.entity";
+import { CustomList } from "src/custom-list/entities/custom-list.entity";
 
 @Entity()
 export class User {
@@ -44,6 +45,9 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlisted: Wishlist[];
+
+  @OneToMany(() => CustomList, (list) => list.user)
+  customLists: CustomList[];
 
   @OneToMany(() => Review, (review) => review.user)
   reviews: Review[];

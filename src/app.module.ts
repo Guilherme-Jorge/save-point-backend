@@ -19,6 +19,7 @@ import { SocialModule } from "./social/social.module";
 import { GatewayModule } from "./gateway/gateway.module";
 import { ChatModule } from "./chat/chat.module";
 // import { CoverMatcherModule } from './cover-matcher/cover-matcher.module';
+import { CustomListModule } from './custom-list/custom-list.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ChatModule } from "./chat/chat.module";
     SocialModule,
     GatewayModule,
     ChatModule,
+    CustomListModule,
     // CoverMatcherModule,
     // AchievementModule,
     // DirectMessageModule,
