@@ -47,11 +47,30 @@ export class CustomListService {
     }
     const lists = await this.customListRepository.find({
       where: { user: { id: userId } },
+      relations: [
+        "items",
+        "items.game",
+        "items.game.genres",
+        "items.game.genres.genre",
+        "items.game.themes",
+        "items.game.themes.theme",
+        "items.game.gamemodes",
+        "items.game.gamemodes.gamemode",
+        "items.game.platforms",
+        "items.game.platforms.platform",
+        "items.game.artworks",
+        "items.game.screenshots",
+        "items.game.companies",
+        "items.game.companies.company",
+        "items.game.achievements",
+        "items.game.cover",
+      ],
     });
     return lists.map((l) => ({
       id: l.id,
       name: l.name,
       createdAt: l.createdAt,
+      games: l.items.map((i) => new GameReturn(i.game)),
     }));
   }
 
