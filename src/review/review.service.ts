@@ -17,7 +17,12 @@ export class ReviewService {
   }
 
   async findAll(): Promise<Review[]> {
-    const reviews = await this.reviewRepository.find();
+    const reviews = await this.reviewRepository.find({
+      relations: {
+        game: true,
+        user: true,
+      },
+    });
     if (!reviews) {
       throw new NotFoundException("Reviews not found");
     }

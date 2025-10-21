@@ -31,6 +31,7 @@ export class ReviewByGameIdPipe
       },
       relations: {
         game: true,
+        user: true,
       },
     });
 
