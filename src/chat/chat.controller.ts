@@ -16,11 +16,11 @@ export class ChatController {
   }
 
   @Get(":userId")
-  findUserChats(@Param() userId: string) {
+  findUserChats(@Param("userId") userId: string) {
     return this.chatService.findUserChats(userId);
   }
 
-  @Get("messages/:chatId")
+  @Post("messages/:chatId")
   findChatMessages(
     @Param("chatId") chatId: string,
     @Body() chatMessagesDto: ChatMessagesDto,

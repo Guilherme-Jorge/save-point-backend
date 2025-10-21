@@ -3,7 +3,7 @@ import { CustomListService } from "./custom-list.service";
 import { CreateCustomListDto } from "./dto/create-custom-list.dto";
 import { AddToCustomListDto } from "./dto/add-to-custom-list.dto";
 
-@Controller("custom-lists")
+@Controller("custom-list")
 export class CustomListController {
   constructor(private readonly customListService: CustomListService) {}
 
