@@ -7,12 +7,13 @@ import { EmailValidator } from "./validator/email.validator";
 import { ConfigModule } from "@nestjs/config";
 import userConfig from "src/config/user.config";
 import { EmailModule } from "src/email/email.module";
+import { CustomList } from "src/custom-list/entities/custom-list.entity";
 
 @Module({
   imports: [
     EmailModule,
     ConfigModule.forFeature(userConfig),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, CustomList]),
   ],
   providers: [UserService, EmailValidator],
   controllers: [UserController],

@@ -39,36 +39,32 @@ export class ForumService {
     return forum;
   }
 
-  async createTopic(
-    gameId: string,
-    userId: string,
-    createTopicDto: CreateTopicDto,
-  ): Promise<any> {
+  async createTopic(createTopicDto: CreateTopicDto): Promise<any> {
+    const { gameId, userId, title, message } = createTopicDto;
     const forum = await this.findOrCreateForumByGame(gameId);
     const owner = await this.userRepository.findOneBy({ id: userId });
     if (!owner) {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
 
-    const topic = this.topicRepository.create({
-      title: createTopicDto.title,
+    const savedTopic = await this.topicRepository.save({
+      title: title,
       forum,
       owner,
     });
-    const savedTopic = await this.topicRepository.save(topic);
 
     const initialMessage = this.topicMessageRepository.create({
-      message: createTopicDto.message,
+      message,
       topic: savedTopic,
       author: owner,
     });
+
     await this.topicMessageRepository.save(initialMessage);
 
-    const response = {
-      id: savedTopic.id,
+    return {
+      topicId: savedTopic.id,
       title: savedTopic.title,
       createdAt: savedTopic.createdAt,
-      updatedAt: savedTopic.updatedAt,
       forum: {
         id: savedTopic.forum.id,
       },
@@ -77,8 +73,6 @@ export class ForumService {
         username: savedTopic.owner.username,
       },
     };
-
-    return response;
   }
 
   async getTopicsByGame(gameId: string): Promise<any[]> {
@@ -104,11 +98,10 @@ export class ForumService {
     }));
   }
 
-  async addMessageToTopic(
-    topicId: string,
-    userId: string,
+  async SendMessageToTopic(
     createMessageDto: CreateTopicMessageDto,
   ): Promise<any> {
+    const { message, topicId, userId } = createMessageDto;
     const topic = await this.topicRepository.findOneBy({ id: topicId });
     if (!topic) {
       throw new NotFoundException(`Topic with id ${topicId} not found`);
@@ -119,15 +112,15 @@ export class ForumService {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
 
-    const message = this.topicMessageRepository.create({
-      ...createMessageDto,
+    const topicMessage = this.topicMessageRepository.create({
+      message,
       topic,
       author,
     });
 
     await this.topicRepository.update(topicId, { updatedAt: new Date() });
 
-    const savedMessage = await this.topicMessageRepository.save(message);
+    const savedMessage = await this.topicMessageRepository.save(topicMessage);
 
     return {
       id: savedMessage.id,

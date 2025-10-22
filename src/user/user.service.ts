@@ -9,12 +9,16 @@ import { UserSignIn } from "./dto/userSignIn.dto";
 import { UserUpdate } from "./dto/userUpdate.dto";
 import { v4 as uuid } from "uuid";
 import { EmailService } from "src/email/email.service";
+import { CustomList } from "src/custom-list/entities/custom-list.entity";
+import { CreateCustomListDto } from "src/custom-list/dto/create-custom-list.dto";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(CustomList)
+    private customListRepository: Repository<CustomList>,
     private readonly emailService: EmailService,
   ) {}
 
@@ -40,7 +44,9 @@ export class UserService {
    * @param user User to be saved.
    * @returns promisse callback.
    */
-  async registerUser(user: UserRegister) {
+  async registerUser(user: UserRegister, acceptLanguage: string) {
+    const portuguese = acceptLanguage.startsWith("pt") ? true : false;
+
     let userDB = {
       id: "",
       email: "",
@@ -49,6 +55,15 @@ export class UserService {
 
     await this.executePromises(async () => {
       userDB = await this.userRepository.save(user);
+    });
+
+    const wishlist: CreateCustomListDto = {
+      userId: userDB.id,
+      name: portuguese ? "Lista de Desejos" : "Wishlist",
+    };
+
+    await this.executePromises(async () => {
+      await this.customListRepository.save(wishlist);
     });
 
     return {

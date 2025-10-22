@@ -5,4 +5,12 @@ export class CreateTopicMessageDto {
   @IsNotEmpty()
   @MinLength(1)
   message: string;
+
+  @IsString()
+  @IsNotEmpty()
+  topicId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }
