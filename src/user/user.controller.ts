@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Headers,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UserSignIn } from "./dto/userSignIn.dto";
@@ -33,11 +34,15 @@ export class UserController {
   async registerUser(
     @Body() user: UserRegister,
     @Body("password", HashPasswordPipe) hashPassword: string,
+    @Headers("accept-language") acceptLanguage: string,
   ) {
-    return await this.userService.registerUser({
-      ...user,
-      password: hashPassword,
-    });
+    return await this.userService.registerUser(
+      {
+        ...user,
+        password: hashPassword,
+      },
+      acceptLanguage,
+    );
   }
 
   @Post("signin")

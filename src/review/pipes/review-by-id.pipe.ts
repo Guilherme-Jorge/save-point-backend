@@ -23,6 +23,10 @@ export class ReviewByIdPipe implements PipeTransform<string, Promise<Review>> {
 
     const review = await this.reviewRepository.findOne({
       where: { id: value },
+      relations: {
+        game: true,
+        user: true,
+      },
     });
     if (!review) {
       throw new NotFoundException(`Review with id ${value} not found`);
