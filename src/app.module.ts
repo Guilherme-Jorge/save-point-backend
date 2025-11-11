@@ -21,6 +21,7 @@ import { ChatModule } from "./chat/chat.module";
 // import { CoverMatcherModule } from './cover-matcher/cover-matcher.module';
 import { CustomListModule } from "./custom-list/custom-list.module";
 import { ForumModule } from "./forum/forum.module";
+import { RecommendationModule } from "./recommendation/recommendation.module";
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ForumModule } from "./forum/forum.module";
     ChatModule,
     CustomListModule,
     ForumModule,
+    RecommendationModule,
     // CoverMatcherModule,
     // AchievementModule,
     // DirectMessageModule,
