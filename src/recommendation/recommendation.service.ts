@@ -1,337 +1,353 @@
-import { Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
-import { IgdbGameInterface } from "src/shared/models/igdb-game";
-import { RecommendationDto } from "./dto/recommendation.dto";
 import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
+import { GameFromIgdbPipe } from "src/shared/pipes/game-from-igdb.pipe";
+import {
+  PopScorePopularityMetricDto,
+  PopScoreRecommendationItemDto,
+  PopScoreRecommendationResponseDto,
+} from "./dto/popscore-recommendation.dto";
+import {
+  POPSCORE_RECOMMENDATION_OPTIONS,
+  PopScoreRecommendationOptions,
+} from "./recommendation.options";
+import { IgdbDiscoverService } from "./services/igdb-discover.service";
+import { TrendingGameDto } from "./dto/trending-game.dto";
+import { PopScorePopularityType } from "./enums/popscore-popularity-type.enum";
+import { IgdbGame } from "src/shared/models/igdb-game";
+import { GameService } from "src/game/game.service";
+import { GameReturn } from "src/game/dto/game-return.dto";
 
-interface PopScorePrimitive {
-  game: number;
+interface PopScorePopularityTypeResponse {
+  id: number;
+  popularity_source: number;
+  name: string;
+  updated_at: number;
+}
+
+interface PopScorePrimitiveResponse {
+  id: number;
+  game_id: number;
+  popularity_type: number;
   value: number;
 }
 
-interface PopScoreType {
-  id: number;
-  slug: string;
+interface RecommendationRequestOptions {
+  limit?: number;
+}
+
+interface PersonalizedRecommendationFilters
+  extends RecommendationRequestOptions {
+  genreIds?: number[];
+}
+
+interface PersonalizedScheduleFilters
+  extends PersonalizedRecommendationFilters {
+  releaseType: "upcoming" | "released";
+}
+
+interface EnrichedRecommendationItem {
+  readonly score: number;
+  readonly igdbGame: IgdbGame;
+  readonly storedGame: GameReturn;
 }
 
 @Injectable()
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
-  private popScoreTypeId?: number;
+  private readonly popularityTypesEndpoint =
+    "https://api.igdb.com/v4/popularity_types";
+  private readonly popularityPrimitivesEndpoint =
+    "https://api.igdb.com/v4/popularity_primitives";
+  private readonly popularityTypesQuery =
+    "fields name,popularity_source,updated_at; sort id asc;";
+  private readonly defaultLimit = 10;
+  private readonly maxLimit = 50;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
     private readonly igdbAuthService: IgdbAuthService,
+    private readonly gameFromIgdbPipe: GameFromIgdbPipe,
+    private readonly gameService: GameService,
+    private readonly igdbDiscoverService: IgdbDiscoverService,
+    @Inject(POPSCORE_RECOMMENDATION_OPTIONS)
+    private readonly options: PopScoreRecommendationOptions,
   ) {}
 
-  async getDefaultRecommendations(limit = 20): Promise<RecommendationDto[]> {
-    this.logger.debug(`Fetching default recommendations with limit: ${limit}`);
+  async getDefaultRecommendations(
+    requestOptions?: RecommendationRequestOptions,
+  ): Promise<PopScoreRecommendationResponseDto> {
+    const limit = this.resolveLimit(requestOptions?.limit);
+    const metric = await this.resolveDefaultMetric();
+    const primitives = await this.fetchPopularityPrimitives(metric.id, limit);
+    const enrichedItems = await this.enrichGamesWithScores(primitives);
 
-    const { games, popScoreMap } = await this.fetchPopScoreGames(limit);
-
-    return this.mapIgdbGamesToRecommendations(games, popScoreMap);
-  }
-
-  async getTrendingGames(limit = 20): Promise<RecommendationDto[]> {
-    this.logger.debug(`Fetching trending games with limit: ${limit}`);
-
-    const games = await this.fetchTrendingGamesFromIgdb(limit);
-
-    return this.mapIgdbGamesToRecommendations(games);
-  }
-
-  async getTopRatedGames(limit = 20): Promise<RecommendationDto[]> {
-    this.logger.debug(`Fetching top rated games with limit: ${limit}`);
-
-    const games = await this.fetchTopRatedGamesFromIgdb(limit);
-
-    return this.mapIgdbGamesToRecommendations(games);
-  }
-
-  async getRecommendationsByGenre(
-    genreIds: number[],
-    limit = 20,
-  ): Promise<RecommendationDto[]> {
-    this.logger.debug(
-      `Fetching recommendations by genre (${genreIds.join(", ")}) with limit: ${limit}`,
-    );
-
-    const games = await this.fetchGamesByGenreFromIgdb(genreIds, limit);
-
-    return this.mapIgdbGamesToRecommendations(games);
-  }
-
-  private async fetchPopScoreGames(limit: number) {
-    const popScoreTypeId = await this.getPopScoreTypeId();
-
-    const primitives = await this.executeIgdbQuery<PopScorePrimitive[]>(
-      "popularity_primitives",
-      `
-      fields game,
-             value;
-      where popularity_type = ${popScoreTypeId}
-        & game != null;
-      sort value desc;
-      limit ${limit};
-    `,
-    );
-
-    const gameIds = primitives
-      .map((primitive) => primitive.game)
-      .filter((id, index, arr) => id != null && arr.indexOf(id) === index);
-
-    if (gameIds.length === 0) {
-      return { games: [], popScoreMap: {} as Record<number, number> };
-    }
-
-    const games = await this.fetchGamesByIds(gameIds);
-
-    const popScoreMap = primitives.reduce<Record<number, number>>(
-      (acc, primitive) => {
-        if (primitive.game != null && acc[primitive.game] === undefined) {
-          acc[primitive.game] = primitive.value;
-        }
-        return acc;
-      },
-      {},
-    );
-
-    return { games, popScoreMap };
-  }
-
-  private async getPopScoreTypeId(): Promise<number> {
-    if (this.popScoreTypeId) {
-      return this.popScoreTypeId;
-    }
-
-    const response = await this.executeIgdbQuery<PopScoreType[]>(
-      "popularity_types",
-      `
-      fields id,
-             slug;
-      where slug = "popscore";
-      limit 1;
-    `,
-    );
-
-    const popScoreType = response[0];
-
-    if (!popScoreType) {
-      throw new Error("PopScore popularity type not found in IGDB");
-    }
-
-    this.popScoreTypeId = popScoreType.id;
-
-    return this.popScoreTypeId;
-  }
-
-  private async fetchPopularGamesFromIgdb(
-    limit: number,
-  ): Promise<IgdbGameInterface[]> {
-    const query = `
-      fields id,
-             name,
-             summary,
-             first_release_date,
-             cover.id,
-             cover.image_id,
-             total_rating,
-             total_rating_count,
-             popularity,
-             genres.id,
-             genres.name,
-             themes.id,
-             themes.name,
-             platforms.id,
-             platforms.name;
-      where total_rating_count > 50
-        & popularity != null
-        & cover != null;
-      sort popularity desc;
-      limit ${limit};
-    `;
-
-    return this.executeIgdbQuery("games", query);
-  }
-
-  private async fetchTrendingGamesFromIgdb(
-    limit: number,
-  ): Promise<IgdbGameInterface[]> {
-    const oneYearAgo = Math.floor(Date.now() / 1000) - 31536000;
-
-    const query = `
-      fields id,
-             name,
-             summary,
-             first_release_date,
-             cover.id,
-             cover.image_id,
-             total_rating,
-             total_rating_count,
-             popularity,
-             genres.id,
-             genres.name,
-             themes.id,
-             themes.name,
-             platforms.id,
-             platforms.name;
-      where first_release_date != null
-        & first_release_date > ${oneYearAgo}
-        & total_rating_count > 20
-        & popularity != null
-        & cover != null;
-      sort popularity desc;
-      limit ${limit};
-    `;
-
-    return this.executeIgdbQuery("games", query);
-  }
-
-  private async fetchTopRatedGamesFromIgdb(
-    limit: number,
-  ): Promise<IgdbGameInterface[]> {
-    const query = `
-      fields id,
-             name,
-             summary,
-             first_release_date,
-             cover.id,
-             cover.image_id,
-             total_rating,
-             total_rating_count,
-             popularity,
-             genres.id,
-             genres.name,
-             themes.id,
-             themes.name,
-             platforms.id,
-             platforms.name;
-      where total_rating_count > 100
-        & total_rating != null
-        & cover != null;
-      sort total_rating desc;
-      limit ${limit};
-    `;
-
-    return this.executeIgdbQuery("games", query);
-  }
-
-  private async fetchGamesByGenreFromIgdb(
-    genreIds: number[],
-    limit: number,
-  ): Promise<IgdbGameInterface[]> {
-    const genreFilter = genreIds.map((id) => `genres = (${id})`).join(" | ");
-
-    const query = `
-      fields id,
-             name,
-             summary,
-             first_release_date,
-             cover.id,
-             cover.image_id,
-             total_rating,
-             total_rating_count,
-             popularity,
-             genres.id,
-             genres.name,
-             themes.id,
-             themes.name,
-             platforms.id,
-             platforms.name;
-      where (${genreFilter})
-        & total_rating_count > 30
-        & total_rating > 70
-        & cover != null;
-      sort popularity desc;
-      limit ${limit};
-    `;
-
-    return this.executeIgdbQuery("games", query);
-  }
-
-  private async fetchGamesByIds(ids: number[]): Promise<IgdbGameInterface[]> {
-    const query = `
-      fields id,
-             name,
-             summary,
-             first_release_date,
-             cover.id,
-             cover.image_id,
-             total_rating,
-             total_rating_count,
-             popularity,
-             genres.id,
-             genres.name,
-             themes.id,
-             themes.name,
-             platforms.id,
-             platforms.name;
-      where id = (${ids.join(",")});
-      limit ${ids.length};
-    `;
-
-    return this.executeIgdbQuery("games", query);
-  }
-
-  private async executeIgdbQuery<T>(
-    endpoint: string,
-    query: string,
-  ): Promise<T> {
-    const accessToken = await this.igdbAuthService.getAccessToken();
-
-    const headers = {
-      "Client-ID": this.configService.get<string>("igdb.clientId"),
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
+    return {
+      metric,
+      items: this.mapToRecommendationItems(enrichedItems),
     };
+  }
 
+  async getTrendingGames(limit: number): Promise<TrendingGameDto[]> {
+    return this.igdbDiscoverService.fetchTrendingGames(limit);
+  }
+
+  async getTopRatedGames(limit: number): Promise<TrendingGameDto[]> {
+    return this.igdbDiscoverService.fetchTopRatedGames(limit);
+  }
+
+  async getPersonalizedRecommendations(
+    filters: PersonalizedRecommendationFilters,
+  ): Promise<TrendingGameDto[]> {
+    return this.buildPersonalizedRecommendations({
+      ...filters,
+      releaseType: "released",
+    });
+  }
+
+  async getPersonalizedUpcomingRecommendations(
+    filters: PersonalizedRecommendationFilters,
+  ): Promise<TrendingGameDto[]> {
+    return this.buildPersonalizedRecommendations({
+      ...filters,
+      releaseType: "upcoming",
+    });
+  }
+
+  private async buildPersonalizedRecommendations(
+    filters: PersonalizedScheduleFilters,
+  ): Promise<TrendingGameDto[]> {
+    const limit = this.resolveLimit(filters.limit);
+    const fetchLimit = Math.min(this.maxLimit, limit * 3);
+    const primitives = await this.fetchPopularityPrimitives(
+      PopScorePopularityType.WantToPlay,
+      fetchLimit,
+    );
+    const enrichedItems = await this.enrichGamesWithScores(primitives);
+    const releaseFiltered = this.filterGamesByReleaseWindow(
+      enrichedItems,
+      filters.releaseType,
+    );
+    const genreFiltered = this.filterGamesByGenres(
+      releaseFiltered,
+      filters.genreIds,
+    );
+
+    return this.mapToTrendingItems(genreFiltered.slice(0, limit));
+  }
+
+  private async resolveDefaultMetric(): Promise<PopScorePopularityMetricDto> {
+    const metrics = await this.fetchPopularityTypes();
+    const configuredId = this.normaliseNumber(this.options.defaultMetric);
+    const metric =
+      (configuredId &&
+        metrics.find((item) => Number(item.id) === configuredId)) ??
+      metrics[0];
+
+    if (!metric) {
+      throw new ServiceUnavailableException(
+        "Default PopScore metric could not be resolved",
+      );
+    }
+
+    return metric;
+  }
+
+  private async fetchPopularityTypes(): Promise<PopScorePopularityMetricDto[]> {
     try {
-      this.logger.debug(`Executing IGDB query on endpoint: ${endpoint}`);
-
       const response = await firstValueFrom(
-        this.httpService.post(`https://api.igdb.com/v4/${endpoint}`, query, {
-          headers,
-        }),
+        this.httpService.post<PopScorePopularityTypeResponse[]>(
+          this.popularityTypesEndpoint,
+          this.popularityTypesQuery,
+          {
+            headers: await this.buildHeaders(),
+          },
+        ),
       );
 
-      return response.data as T;
+      return response.data.map((type) => this.mapPopularityType(type));
     } catch (error) {
-      this.logger.error(`IGDB query failed on endpoint: ${endpoint}`, error);
-      throw error;
+      this.logError("Failed to fetch PopScore popularity types", error);
+      throw new ServiceUnavailableException(
+        "Unable to retrieve popularity metrics from IGDB",
+      );
     }
   }
 
-  private mapIgdbGamesToRecommendations(
-    games: IgdbGameInterface[],
-    popScoreMap?: Record<number, number>,
-  ): RecommendationDto[] {
-    return games.map((game) => ({
-      igdbId: game.id,
-      name: game.name,
-      summary: game.summary,
-      releaseDate: game.first_release_date
-        ? new Date(game.first_release_date * 1000)
-        : undefined,
-      coverUrl: game.cover
-        ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
-        : undefined,
-      genres:
-        game.genres?.map((genre) => ({ id: genre.id, name: genre.name })) ?? [],
-      themes:
-        game.themes?.map((theme) => ({ id: theme.id, name: theme.name })) ?? [],
-      platforms:
-        game.platforms?.map((platform) => ({
-          id: platform.id,
-          name: platform.name,
-        })) ?? [],
-      rating: (game as unknown as { total_rating?: number }).total_rating,
-      ratingCount: (game as unknown as { total_rating_count?: number })
-        .total_rating_count,
-      popularity: (game as unknown as { popularity?: number }).popularity,
-      popScore: popScoreMap?.[game.id],
+  private async fetchPopularityPrimitives(
+    popularityTypeId: number,
+    limit: number,
+  ): Promise<PopScorePrimitiveResponse[]> {
+    const query = `fields game_id,value,popularity_type; sort value desc; limit ${limit}; where popularity_type = ${popularityTypeId};`;
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<PopScorePrimitiveResponse[]>(
+          this.popularityPrimitivesEndpoint,
+          query,
+          {
+            headers: await this.buildHeaders(),
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      this.logError(
+        `Failed to fetch PopScore primitives for metric ${popularityTypeId}`,
+        error,
+      );
+      throw new ServiceUnavailableException(
+        "Unable to retrieve popularity rankings from IGDB",
+      );
+    }
+  }
+
+  private async enrichGamesWithScores(
+    primitives: PopScorePrimitiveResponse[],
+  ): Promise<EnrichedRecommendationItem[]> {
+    return Promise.all(
+      primitives.map(async (primitive) => {
+        const igdbGame = await this.gameFromIgdbPipe.transform(
+          primitive.game_id.toString(),
+        );
+        const storedGame = await this.gameService.createFromIgdb(igdbGame);
+
+        return {
+          score: primitive.value,
+          igdbGame,
+          storedGame,
+        };
+      }),
+    );
+  }
+
+  private mapToRecommendationItems(
+    items: EnrichedRecommendationItem[],
+  ): PopScoreRecommendationItemDto[] {
+    return items.map(({ score, storedGame }) => ({
+      score,
+      game: storedGame,
     }));
+  }
+
+  private mapToTrendingItems(
+    items: EnrichedRecommendationItem[],
+  ): TrendingGameDto[] {
+    return items.map(({ score, storedGame }) => ({
+      score,
+      game: storedGame,
+    }));
+  }
+
+  private async buildHeaders(): Promise<Record<string, string>> {
+    const clientId = this.configService.get<string>("igdb.clientId");
+    const accessToken = await this.igdbAuthService.getAccessToken();
+
+    if (!clientId) {
+      throw new ServiceUnavailableException(
+        "IGDB client configuration is missing",
+      );
+    }
+
+    return {
+      "Client-ID": clientId,
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+      "Content-Type": "text/plain",
+    };
+  }
+
+  private mapPopularityType(
+    type: PopScorePopularityTypeResponse,
+  ): PopScorePopularityMetricDto {
+    const timestamp =
+      typeof type.updated_at === "number" && !Number.isNaN(type.updated_at)
+        ? type.updated_at * 1000
+        : Date.now();
+
+    return {
+      id: type.id,
+      name: type.name,
+      popularitySource: type.popularity_source,
+      updatedAt: new Date(timestamp).toISOString(),
+    };
+  }
+
+  private resolveLimit(limit?: number): number {
+    const resolved = this.normaliseNumber(limit);
+
+    if (!resolved) {
+      return this.defaultLimit;
+    }
+
+    return Math.max(1, Math.min(this.maxLimit, resolved));
+  }
+
+  private normaliseNumber(value?: number): number | undefined {
+    if (typeof value !== "number") {
+      return undefined;
+    }
+
+    if (!Number.isFinite(value)) {
+      return undefined;
+    }
+
+    return value;
+  }
+
+  private logError(message: string, error: unknown) {
+    if (error instanceof Error) {
+      this.logger.error(message, error.stack);
+      return;
+    }
+
+    this.logger.error(message);
+  }
+
+  private filterGamesByGenres(
+    items: EnrichedRecommendationItem[],
+    genreIds?: number[],
+  ) {
+    if (!genreIds || genreIds.length === 0) {
+      return items;
+    }
+
+    const genreSet = new Set(genreIds);
+
+    return items.filter((item) =>
+      this.gameMatchesGenres(item.igdbGame, genreSet),
+    );
+  }
+
+  private gameMatchesGenres(game: IgdbGame, genreIds: Set<number>) {
+    return game.genres?.some((genre) => genreIds.has(genre.id)) ?? false;
+  }
+
+  private filterGamesByReleaseWindow(
+    items: EnrichedRecommendationItem[],
+    releaseType: PersonalizedScheduleFilters["releaseType"],
+  ) {
+    const now = Date.now();
+
+    if (releaseType === "upcoming") {
+      return items.filter((item) => {
+        const releaseDate = item.igdbGame.firstReleaseDate?.getTime();
+        return releaseDate !== undefined && releaseDate > now;
+      });
+    }
+
+    return items.filter((item) => {
+      const releaseDate = item.igdbGame.firstReleaseDate?.getTime();
+      return releaseDate !== undefined && releaseDate <= now;
+    });
   }
 }

@@ -1,32 +1,69 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Query,
+} from "@nestjs/common";
 import { RecommendationService } from "./recommendation.service";
-import { RecommendationQueryDto } from "./dto/recommendation-query.dto";
-import { GenreRecommendationQueryDto } from "./dto/genre-recommendation-query.dto";
 
 @Controller("recommendations")
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Get("default")
-  getDefaultRecommendations(@Query() queryDto: RecommendationQueryDto) {
-    return this.recommendationService.getDefaultRecommendations(queryDto.limit);
+  getDefaultRecommendations(
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.recommendationService.getDefaultRecommendations({ limit });
   }
 
   @Get("trending")
-  getTrendingRecommendations(@Query() queryDto: RecommendationQueryDto) {
-    return this.recommendationService.getTrendingGames(queryDto.limit);
+  getTrendingGames(
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.recommendationService.getTrendingGames(limit);
   }
 
   @Get("top-rated")
-  getTopRatedRecommendations(@Query() queryDto: RecommendationQueryDto) {
-    return this.recommendationService.getTopRatedGames(queryDto.limit);
+  getTopRatedGames(
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.recommendationService.getTopRatedGames(limit);
   }
 
-  @Get("by-genre")
-  getRecommendationsByGenre(@Query() queryDto: GenreRecommendationQueryDto) {
-    return this.recommendationService.getRecommendationsByGenre(
-      queryDto.genreIds,
-      queryDto.limit,
-    );
+  @Get("personalized")
+  getPersonalizedRecommendations(
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query("genres") genres?: string,
+  ) {
+    return this.recommendationService.getPersonalizedRecommendations({
+      limit,
+      genreIds: this.parseGenreIds(genres),
+    });
+  }
+
+  @Get("personalized/upcoming")
+  getPersonalizedUpcomingRecommendations(
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query("genres") genres?: string,
+  ) {
+    return this.recommendationService.getPersonalizedUpcomingRecommendations({
+      limit,
+      genreIds: this.parseGenreIds(genres),
+    });
+  }
+
+  private parseGenreIds(genres?: string): number[] | undefined {
+    if (!genres) {
+      return undefined;
+    }
+
+    const values = genres
+      .split(",")
+      .map((value) => Number(value.trim()))
+      .filter((value) => Number.isFinite(value));
+
+    return values.length > 0 ? Array.from(new Set(values)) : undefined;
   }
 }

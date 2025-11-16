@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ILike, Repository, UpdateResult } from "typeorm";
+import { ILike, QueryFailedError, Repository, UpdateResult } from "typeorm";
 import { Game } from "./entities/game.entity";
 import { CreateGameDto } from "./dto/create-game.dto";
 import { UpdateGameDto } from "./dto/update-game.dto";
@@ -62,7 +62,43 @@ export class GameService {
   }
 
   async createFromIgdb(igdbGame: IgdbGame): Promise<GameReturn> {
-    return this.igdbGameImportService.importFromIgdb(igdbGame);
+    const existingGame = await this.findByIgdbIdWithRelations(igdbGame.id);
+
+    if (existingGame) {
+      return new GameReturn(existingGame);
+    }
+
+    try {
+      return await this.igdbGameImportService.importFromIgdb(igdbGame);
+    } catch (error) {
+      if (this.isUniqueConstraintViolation(error)) {
+        const persistedGame = await this.findByIgdbIdWithRelations(igdbGame.id);
+
+        if (persistedGame) {
+          return new GameReturn(persistedGame);
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  private async findByIgdbIdWithRelations(
+    igdbId: number,
+  ): Promise<Game | null> {
+    return this.gameRepository.findOne({
+      where: { igdbId },
+      relations: this.detailedRelations,
+    });
+  }
+
+  private isUniqueConstraintViolation(error: unknown): boolean {
+    if (!(error instanceof QueryFailedError)) {
+      return false;
+    }
+
+    const driverError = error.driverError as { code?: string } | undefined;
+    return driverError?.code === "23505";
   }
 
   async findAll(): Promise<GameReturn[]> {
