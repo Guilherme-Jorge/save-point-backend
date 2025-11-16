@@ -7,6 +7,8 @@ import {
   Post,
   Put,
   Headers,
+  Req,
+  UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UserSignIn } from "./dto/userSignIn.dto";
@@ -15,10 +17,23 @@ import { UserUpdate } from "./dto/userUpdate.dto";
 import { HashPasswordPipe } from "src/shared/pipes/hash-password.pipe";
 import { UserByIdPipe } from "./pipes/user-by-id.pipe";
 import { User } from "./entities/user.entity";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googleAuth(@Req() req) {
+    // Do nothing. Redirect to google Auth.
+  }
+
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  googleAuthRedirect(@Req() req) {
+    return req.user;
+  }
 
   @Get()
   findAll() {
