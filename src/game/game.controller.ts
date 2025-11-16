@@ -52,6 +52,11 @@ export class GameController {
     return this.gameService.fuzzySeachByName(q);
   }
 
+  @Get("keyword")
+  searchByKeyword(@Query("q") keyword: string) {
+    return this.gameService.findByKeyword(keyword);
+  }
+
   @Patch("game/:id")
   update(
     @Param("id", ParseUUIDPipe) id: string,

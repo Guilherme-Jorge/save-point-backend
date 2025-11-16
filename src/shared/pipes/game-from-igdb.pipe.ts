@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   PipeTransform,
 } from "@nestjs/common";
@@ -8,14 +9,18 @@ import { IgdbGame, IgdbGameInterface } from "../models/igdb-game";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
+import { IgdbAuthService } from "../services/igdb-auth.service";
 
 @Injectable()
 export class GameFromIgdbPipe
   implements PipeTransform<string, Promise<IgdbGame>>
 {
+  private readonly logger = new Logger(GameFromIgdbPipe.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly igdbAuthService: IgdbAuthService,
   ) {}
 
   async transform(value: string): Promise<IgdbGame> {
@@ -51,9 +56,11 @@ export class GameFromIgdbPipe
       where id = ${id};
     `;
 
+    const accessToken = await this.igdbAuthService.getAccessToken();
+
     const headers = {
       "Client-ID": this.configService.get<string>("igdb.clientId"),
-      Authorization: `Bearer ${this.configService.get<string>("igdb.accessToken")}`,
+      Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
     };
 
@@ -78,7 +85,7 @@ export class GameFromIgdbPipe
 
       return gameData;
     } catch (error) {
-      console.error("Error fetching game details:", error);
+      this.logger.error("Error fetching game details:", error);
       throw error;
     }
   }

@@ -37,9 +37,9 @@ services:
   #   environment:
   #     - COVERS_ROOT=/data
   #     - DEVICE=cpu
-  #     - INDEX_PATH=/data/covers.faiss
-  #     - META_PATH=/data/covers_meta.json
-  #     - WEIGHTS_PATH=/app/videogame_cover_identification/data/cover_encoder.pt
+  #     - INDEX_PATH=/data/covers/covers.faiss
+  #     - META_PATH=/data/covers/covers_meta.json
+  #     - WEIGHTS_PATH=/data/covers/cover_encoder.pt
   #   volumes:
   #     - ./data:/data:ro
   #   ports:
