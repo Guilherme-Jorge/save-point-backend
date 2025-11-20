@@ -11,6 +11,7 @@ import { v4 as uuid } from "uuid";
 import { EmailService } from "src/email/email.service";
 import { CustomList } from "src/custom-list/entities/custom-list.entity";
 import { CreateCustomListDto } from "src/custom-list/dto/create-custom-list.dto";
+import { Response } from "express";
 
 @Injectable()
 export class UserService {
@@ -271,5 +272,33 @@ export class UserService {
       );
 
     return userDB;
+  }
+
+  async loginWithGoogle(userFromGoogle: any, res: Response) {
+    if (!userFromGoogle) {
+      return "Unexpected error.";
+    }
+
+    const user = await this.findUserByEmail(userFromGoogle.email);
+    let register;
+
+    if (!user) {
+      register = await this.registerUser(
+        {
+          email: userFromGoogle.email,
+          password: "abcde123",
+          username: userFromGoogle.firstName,
+        },
+        "pt",
+      );
+    }
+
+    const queryParams = new URLSearchParams({
+      userId: user.id || register.user.id,
+      username: user.username || register.user.username,
+      email: user.email || register.user.email,
+    }).toString();
+
+    return res.redirect(`http://localhost:5173/home?${queryParams}`);
   }
 }

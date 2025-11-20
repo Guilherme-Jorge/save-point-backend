@@ -9,6 +9,7 @@ import {
   Headers,
   Req,
   UseGuards,
+  Res,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UserSignIn } from "./dto/userSignIn.dto";
@@ -18,6 +19,7 @@ import { HashPasswordPipe } from "src/shared/pipes/hash-password.pipe";
 import { UserByIdPipe } from "./pipes/user-by-id.pipe";
 import { User } from "./entities/user.entity";
 import { AuthGuard } from "@nestjs/passport";
+import { Response } from "express";
 
 @Controller("user")
 export class UserController {
@@ -31,8 +33,8 @@ export class UserController {
 
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))
-  googleAuthRedirect(@Req() req) {
-    return req.user;
+  googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+    return this.userService.loginWithGoogle(req.user, res);
   }
 
   @Get()
