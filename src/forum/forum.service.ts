@@ -98,7 +98,34 @@ export class ForumService {
     }));
   }
 
-  async SendMessageToTopic(
+  async getTopicsById(topicId: string): Promise<any> {
+    const topic = await this.topicRepository.find({
+      where: {
+        id: topicId
+      },
+      relations: ["owner", "messages"]
+    });
+
+    if (!topic) {
+      throw new NotFoundException(`Topic with id ${topicId} not found`);
+    }
+
+    return {
+      id: topic[0].id,
+      title: topic[0].title,
+      createdAt: topic[0].createdAt,
+      updatedAt: topic[0].updatedAt,
+      messageCount: topic[0].messages.length,
+      owner: {
+        id: topic[0].owner.id,
+        username: topic[0].owner.username,
+      }
+    }
+  }
+
+  async addMessageToTopic(
+    topicId: string,
+    userId: string,
     createMessageDto: CreateTopicMessageDto,
   ): Promise<any> {
     const { message, topicId, userId } = createMessageDto;
