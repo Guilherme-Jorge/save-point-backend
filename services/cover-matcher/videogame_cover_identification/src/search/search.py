@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+from dataclasses import dataclass
 from typing import Any, Optional
 
 import cv2
@@ -15,6 +16,38 @@ from ..utils.image import detect_and_rectify_cover, embed_image, sift_score
 from ..utils.paths import detect_covers_root
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class SearchResources:
+    """Preloaded components reused across search requests."""
+
+    index: Any
+    metas: list[dict[str, Any]]
+    model: torch.nn.Module
+    preprocess: Any
+
+
+def load_search_resources(
+    device: str,
+    weights_path: str,
+    index_path: str,
+    meta_path: str,
+) -> SearchResources:
+    """Load FAISS index and encoder for reuse.
+
+    Args:
+        device: Device string for the encoder.
+        weights_path: Path to fine-tuned encoder weights.
+        index_path: Absolute path to FAISS index.
+        meta_path: Absolute path to metadata file.
+
+    Returns:
+        SearchResources containing reusable components.
+    """
+    index, metas = load_index(index_path, meta_path)
+    model, preprocess = load_encoder(device, weights_path)
+    return SearchResources(index=index, metas=metas, model=model, preprocess=preprocess)
 
 
 def _extract_base_name(game_name: str) -> str:
@@ -358,6 +391,7 @@ def search_cover(
     rerank_k: Optional[int] = None,
     accept: Optional[float] = None,
     device: Optional[str] = None,
+    resources: Optional[SearchResources] = None,
 ) -> dict[str, Any]:
     """Search for the best-matching game cover given an input image path.
 
@@ -367,6 +401,7 @@ def search_cover(
         rerank_k: Number of top candidates to rerank geometrically.
         accept: Cosine similarity acceptance threshold.
         device: Device to use for computation.
+        resources: Preloaded model, preprocess, index, and metadata.
 
     Returns:
         Result dictionary with scores, best match and alternatives.
@@ -377,16 +412,21 @@ def search_cover(
     accept = accept or config.search.accept_threshold
     device = device or config.device
 
-    covers_root = detect_covers_root()
-    index_path = config.index.index_path
-    if not os.path.isabs(index_path):
-        index_path = os.path.join(covers_root, index_path)
-    meta_path = config.index.meta_path
-    if not os.path.isabs(meta_path):
-        meta_path = os.path.join(covers_root, meta_path)
-
-    index, metas = load_index(index_path, meta_path)
-    model, preprocess = load_encoder(device, config.model.weights_path)
+    if resources:
+        index = resources.index
+        metas = resources.metas
+        model = resources.model
+        preprocess = resources.preprocess
+    else:
+        covers_root = detect_covers_root()
+        index_path = config.index.index_path
+        if not os.path.isabs(index_path):
+            index_path = os.path.join(covers_root, index_path)
+        meta_path = config.index.meta_path
+        if not os.path.isabs(meta_path):
+            meta_path = os.path.join(covers_root, meta_path)
+        index, metas = load_index(index_path, meta_path)
+        model, preprocess = load_encoder(device, config.model.weights_path)
 
     with torch.no_grad():
         dummy = torch.zeros(1, 3, 224, 224, device=next(model.parameters()).device)

@@ -14,8 +14,7 @@ import { CreateTopicMessageDto } from "./dto/create-topic-message.dto";
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
-  // Topics
-  @Get("game/:gameId/topics")
+  @Get("topics/:gameId")
   getTopicsByGame(@Param("gameId", ParseUUIDPipe) gameId: string) {
     return this.forumService.getTopicsByGame(gameId);
   }
@@ -33,22 +32,19 @@ export class ForumController {
   ) {
     return this.forumService.createTopic(gameId, userId, createTopicDto);
   }
+  
+  @Post("topics/create")
+  createTopic(@Body() createTopicDto: CreateTopicDto) {
+    return this.forumService.createTopic(createTopicDto);
+  }
 
-  @Get("topics/:topicId/messages")
+  @Get("topics/messages/:topicId")
   getMessagesByTopic(@Param("topicId", ParseUUIDPipe) topicId: string) {
     return this.forumService.getMessagesByTopic(topicId);
   }
 
-  @Post("topics/:topicId/user/:userId/messages")
-  addMessageToTopic(
-    @Param("topicId", ParseUUIDPipe) topicId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
-    @Body() createMessageDto: CreateTopicMessageDto,
-  ) {
-    return this.forumService.addMessageToTopic(
-      topicId,
-      userId,
-      createMessageDto,
-    );
+  @Post("topics/messages")
+  SendMessageToTopic(@Body() createMessageDto: CreateTopicMessageDto) {
+    return this.forumService.SendMessageToTopic(createMessageDto);
   }
 }

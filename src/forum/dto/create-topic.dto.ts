@@ -8,6 +8,14 @@ export class CreateTopicDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(10)
+  @MinLength(1)
   message: string;
+
+  @IsString()
+  @IsNotEmpty()
+  gameId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }

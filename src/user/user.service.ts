@@ -9,12 +9,17 @@ import { UserSignIn } from "./dto/userSignIn.dto";
 import { UserUpdate } from "./dto/userUpdate.dto";
 import { v4 as uuid } from "uuid";
 import { EmailService } from "src/email/email.service";
+import { CustomList } from "src/custom-list/entities/custom-list.entity";
+import { CreateCustomListDto } from "src/custom-list/dto/create-custom-list.dto";
+import { Response } from "express";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(CustomList)
+    private customListRepository: Repository<CustomList>,
     private readonly emailService: EmailService,
   ) {}
 
@@ -40,7 +45,9 @@ export class UserService {
    * @param user User to be saved.
    * @returns promisse callback.
    */
-  async registerUser(user: UserRegister) {
+  async registerUser(user: UserRegister, acceptLanguage: string) {
+    const portuguese = acceptLanguage.startsWith("pt") ? true : false;
+
     let userDB = {
       id: "",
       email: "",
@@ -49,6 +56,15 @@ export class UserService {
 
     await this.executePromises(async () => {
       userDB = await this.userRepository.save(user);
+    });
+
+    const wishlist: CreateCustomListDto = {
+      userId: userDB.id,
+      name: portuguese ? "Lista de Desejos" : "Wishlist",
+    };
+
+    await this.executePromises(async () => {
+      await this.customListRepository.save(wishlist);
     });
 
     return {
@@ -256,5 +272,33 @@ export class UserService {
       );
 
     return userDB;
+  }
+
+  async loginWithGoogle(userFromGoogle: any, res: Response) {
+    if (!userFromGoogle) {
+      return "Unexpected error.";
+    }
+
+    const user = await this.findUserByEmail(userFromGoogle.email);
+    let register;
+
+    if (!user) {
+      register = await this.registerUser(
+        {
+          email: userFromGoogle.email,
+          password: "abcde123",
+          username: userFromGoogle.firstName,
+        },
+        "pt",
+      );
+    }
+
+    const queryParams = new URLSearchParams({
+      userId: user.id || register.user.id,
+      username: user.username || register.user.username,
+      email: user.email || register.user.email,
+    }).toString();
+
+    return res.redirect(`http://localhost:5173/home?${queryParams}`);
   }
 }

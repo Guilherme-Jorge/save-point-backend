@@ -19,6 +19,10 @@ import { ConfigModule } from "@nestjs/config";
 import igdbConfig from "src/config/igdb.config";
 import { HttpModule } from "@nestjs/axios";
 import { Artwork } from "./entities/artwork.entity";
+import { IgdbGameImportService } from "./services/igdb-game-import.service";
+import { IgdbGameSearchService } from "./services/igdb-game-search.service";
+import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
+import { GameFromIgdbPipe } from "src/shared/pipes/game-from-igdb.pipe";
 
 @Module({
   imports: [
@@ -43,6 +47,12 @@ import { Artwork } from "./entities/artwork.entity";
   ],
   exports: [GameService],
   controllers: [GameController],
-  providers: [GameService],
+  providers: [
+    GameService,
+    IgdbGameImportService,
+    IgdbGameSearchService,
+    IgdbAuthService,
+    GameFromIgdbPipe,
+  ],
 })
 export class GameModule {}

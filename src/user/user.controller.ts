@@ -6,6 +6,10 @@ import {
   Param,
   Post,
   Put,
+  Headers,
+  Req,
+  UseGuards,
+  Res,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UserSignIn } from "./dto/userSignIn.dto";
@@ -14,10 +18,24 @@ import { UserUpdate } from "./dto/userUpdate.dto";
 import { HashPasswordPipe } from "src/shared/pipes/hash-password.pipe";
 import { UserByIdPipe } from "./pipes/user-by-id.pipe";
 import { User } from "./entities/user.entity";
+import { AuthGuard } from "@nestjs/passport";
+import { Response } from "express";
 
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googleAuth(@Req() req) {
+    // Do nothing. Redirect to google Auth.
+  }
+
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+    return this.userService.loginWithGoogle(req.user, res);
+  }
 
   @Get()
   findAll() {
@@ -33,11 +51,15 @@ export class UserController {
   async registerUser(
     @Body() user: UserRegister,
     @Body("password", HashPasswordPipe) hashPassword: string,
+    @Headers("accept-language") acceptLanguage: string,
   ) {
-    return await this.userService.registerUser({
-      ...user,
-      password: hashPassword,
-    });
+    return await this.userService.registerUser(
+      {
+        ...user,
+        password: hashPassword,
+      },
+      acceptLanguage,
+    );
   }
 
   @Post("signin")
