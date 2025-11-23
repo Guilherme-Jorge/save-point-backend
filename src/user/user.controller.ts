@@ -15,6 +15,7 @@ import { UserService } from "./user.service";
 import { UserSignIn } from "./dto/userSignIn.dto";
 import { UserRegister } from "./dto/userRegister.dto";
 import { UserUpdate } from "./dto/userUpdate.dto";
+import { UserDeactivate } from "./dto/userDeactivate.dto";
 import { HashPasswordPipe } from "src/shared/pipes/hash-password.pipe";
 import { UserByIdPipe } from "./pipes/user-by-id.pipe";
 import { User } from "./entities/user.entity";
@@ -91,9 +92,9 @@ export class UserController {
   @Delete(":id")
   async deleteUser(
     @Param("id") id: string,
-    @Body("password") password: string,
+    @Body() userDeactivate: UserDeactivate,
   ) {
-    const response = await this.userService.deleteUser(id, password);
+    const response = await this.userService.deleteUser(id, userDeactivate.password);
     return response;
   }
 }

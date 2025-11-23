@@ -10,6 +10,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from "typeorm";
 import { Review } from "src/review/entities/review.entity";
 import { CustomList } from "src/custom-list/entities/custom-list.entity";
@@ -33,6 +34,9 @@ export class User {
 
   @Column({ type: "timestamp", nullable: true })
   forgotPassExpires?: Date;
+
+  @DeleteDateColumn({ type: "timestamp", nullable: true })
+  deletedAt?: Date;
 
   @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
