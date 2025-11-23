@@ -14,7 +14,7 @@ import { CreateTopicMessageDto } from "./dto/create-topic-message.dto";
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
-  @Get("topics/:gameId")
+  @Get("/game/:gameId/topics")
   getTopicsByGame(@Param("gameId", ParseUUIDPipe) gameId: string) {
     return this.forumService.getTopicsByGame(gameId);
   }
