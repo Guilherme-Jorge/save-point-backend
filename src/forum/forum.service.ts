@@ -123,9 +123,7 @@ export class ForumService {
     }
   }
 
-  async addMessageToTopic(
-    topicId: string,
-    userId: string,
+  async SendMessageToTopic(
     createMessageDto: CreateTopicMessageDto,
   ): Promise<any> {
     const { message, topicId, userId } = createMessageDto;
