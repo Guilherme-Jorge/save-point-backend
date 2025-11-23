@@ -4,6 +4,8 @@ import { Game } from "./entities/game.entity";
 import {
   DeepPartial,
   FindOptionsWhere,
+  In,
+  Like,
   Repository,
   UpdateResult,
 } from "typeorm";
@@ -28,15 +30,15 @@ import { GameReturn } from "./dto/game-return.dto";
 
 function getThreshold(length: number): number {
   if (length <= 3) {
-    return 0.4;
+    return 0.2;
   }
   if (length <= 6) {
-    return 0.35;
+    return 0.15;
   }
   if (length <= 12) {
-    return 0.3;
+    return 0.1;
   }
-  return 0.25;
+  return 0.1;
 }
 
 @Injectable()
@@ -292,23 +294,116 @@ export class GameService {
     return gameReturn;
   }
 
-  async fuzzySeachByName(query: string, limit = 10): Promise<GameReturn[]> {
-    const threshold = getThreshold(query.length);
+  async fuzzySearchByName(query: string, limit = 10): Promise<GameReturn[]> {
+    let games: Game[];
 
-    const games = await this.gameRepository
+    const queryBuilder = this.gameRepository
       .createQueryBuilder("game")
-      .where("game.name % :query", { query })
-      .andWhere("similarity(game.name, :name) > :threshold", {
-        query,
-        threshold,
-      })
-      .orderBy("similarity(game.name, :query)", "DESC")
-      .limit(limit)
-      .getMany();
-    const gameReturn: GameReturn[] = [];
-    games.map((game) => gameReturn.push(new GameReturn(game)));
+      .leftJoinAndSelect("game.genres", "genres")
+      .leftJoinAndSelect("genres.genre", "genre")
+      .leftJoinAndSelect("game.themes", "themes")
+      .leftJoinAndSelect("themes.theme", "theme")
+      .leftJoinAndSelect("game.gamemodes", "gamemodes")
+      .leftJoinAndSelect("gamemodes.gamemode", "gamemode")
+      .leftJoinAndSelect("game.platforms", "platforms")
+      .leftJoinAndSelect("platforms.platform", "platform")
+      .leftJoinAndSelect("game.artworks", "artworks")
+      .leftJoinAndSelect("game.screenshots", "screenshots")
+      .leftJoinAndSelect("game.cover", "cover")
+      .leftJoinAndSelect("game.companies", "companies")
+      .leftJoinAndSelect("companies.company", "company");
 
-    return gameReturn;
+    // Use ILIKE for short queries (less than 3 characters) or as fallback
+    if (query.length < 3) {
+      // First, get game IDs that match the query
+      const gameIds = await this.gameRepository
+        .createQueryBuilder("game")
+        .select("game.id")
+        .where("game.name ILIKE :query", { query: `%${query}%` })
+        .orderBy("game.name", "ASC")
+        .limit(limit)
+        .getRawMany();
+
+      if (gameIds.length > 0) {
+        // Then get the full games with relations
+        const ids = gameIds.map(row => row.game_id);
+        games = await this.gameRepository.find({
+          where: { id: In(ids) },
+          relations: [
+            "genres",
+            "genres.genre",
+            "themes",
+            "themes.theme",
+            "gamemodes",
+            "gamemodes.gamemode",
+            "platforms",
+            "platforms.platform",
+            "artworks",
+            "screenshots",
+            "cover",
+            "companies",
+            "companies.company",
+          ],
+          order: { name: "ASC" },
+        });
+      } else {
+        games = [];
+      }
+    } else {
+      // Try fuzzy search first for longer queries
+      const threshold = getThreshold(query.length);
+
+      // Set pg_trgm similarity threshold for this session
+      await this.gameRepository.query("SET pg_trgm.similarity_threshold = 0.1");
+
+      games = await queryBuilder
+        .where("game.name % :query", { query })
+        .andWhere("similarity(game.name, :query) > :threshold", {
+          query,
+          threshold,
+        })
+        .orderBy("similarity(game.name, :query)", "DESC")
+        .limit(limit)
+        .getMany();
+
+      // If no results with fuzzy search, fallback to ILIKE
+      if (games.length === 0) {
+        // First, get game IDs that match the query
+        const gameIds = await this.gameRepository
+          .createQueryBuilder("game")
+          .select("game.id")
+          .where("game.name ILIKE :query", { query: `%${query}%` })
+          .orderBy("game.name", "ASC")
+          .limit(limit)
+          .getRawMany();
+
+        if (gameIds.length > 0) {
+          // Then get the full games with relations
+          const ids = gameIds.map(row => row.game_id);
+          games = await this.gameRepository.find({
+            where: { id: In(ids) },
+            relations: [
+              "genres",
+              "genres.genre",
+              "themes",
+              "themes.theme",
+              "gamemodes",
+              "gamemodes.gamemode",
+              "platforms",
+              "platforms.platform",
+              "artworks",
+              "screenshots",
+              "cover",
+              "companies",
+              "companies.company",
+            ],
+            order: { name: "ASC" },
+          });
+        }
+      }
+    }
+
+    return games.map((game) => new GameReturn(game));
   }
 
   async update(

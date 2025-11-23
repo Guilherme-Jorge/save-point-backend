@@ -49,7 +49,7 @@ export class GameController {
 
   @Get("search")
   search(@Query("q") q: string) {
-    return this.gameService.fuzzySeachByName(q);
+    return this.gameService.fuzzySearchByName(q);
   }
 
   @Patch("game/:id")

@@ -20,6 +20,11 @@ export class ForumController {
     return this.forumService.getTopicsByGame(gameId);
   }
 
+  @Get("topic/:topicId")
+  getTopicsById(@Param("topicId", ParseUUIDPipe) topicId: string) {
+    return this.forumService.getTopicsById(topicId);
+  }
+
   @Post("game/:gameId/user/:userId/topics")
   createTopic(
     @Param("gameId", ParseUUIDPipe) gameId: string,
