@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { UserRegister } from "./dto/userRegister.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, IsNull } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcryptjs";
 import { UserReturn } from "./dto/userReturn.dto";
@@ -127,23 +127,38 @@ export class UserService {
    * @param pass user password.
    * @returns promise callback.
    */
+  // user.service.ts (Função deleteUser corrigida)
+
+  /**
+   * This function deletes/deactivates an existent user (Soft Delete).
+   * @param id user id.
+   * @param pass user password.
+   * @returns promise callback.
+   */
+  /**
+   * This function deletes/deactivates an existent user (Soft Delete).
+   * @param id user id.
+   * @param pass user password.
+   * @returns promise callback.
+   */
   async deleteUser(id: string, pass: string) {
     const userToDelete = await this.findUserById(id);
     const samePassword = await bcrypt.compare(pass, userToDelete.password);
 
-    if (!samePassword)
+    if (!samePassword) {
       throw new HttpException(
         { message: "Senha incorreta." },
         HttpStatus.FORBIDDEN,
       );
+    }
 
     await this.executePromises(async () => {
-      await this.userRepository.delete(id);
+      await this.userRepository.softDelete(id);
     });
 
     return {
-      user: new UserReturn(userToDelete),
-      message: "user permanently deleted.",
+      message: "Conta desativada com sucesso.",
+      userId: id,
     };
   }
 
@@ -230,9 +245,12 @@ export class UserService {
   }
 
   async findAll() {
-    const users = await this.userRepository.find();
+    // Não retorna usuários com soft delete (deletedAt != null)
+    const users = await this.userRepository.find({
+      where: { deletedAt: IsNull() },
+    });
 
-    if (!users)
+    if (!users || users.length === 0)
       throw new HttpException(
         { message: "Users not found." },
         HttpStatus.NOT_FOUND,
