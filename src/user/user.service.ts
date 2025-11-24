@@ -81,6 +81,13 @@ export class UserService {
   async signIn(user: UserSignIn) {
     const userDB = await this.findUserByEmail(user.email);
 
+    if (userDB.deletedAt != null) {
+      throw new HttpException(
+        { message: "This user was deleted. Contact the support." },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     await bcrypt
       .compare(user.password, userDB.password)
       .then(function (result) {
