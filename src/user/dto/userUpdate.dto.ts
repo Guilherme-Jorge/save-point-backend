@@ -1,4 +1,4 @@
-import { IsOptional } from "class-validator";
+import { IsOptional, IsUrl, MaxLength } from "class-validator";
 
 export class UserUpdate {
   @IsOptional()
@@ -6,4 +6,9 @@ export class UserUpdate {
 
   @IsOptional()
   email: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true, protocols: ["http", "https"] })
+  @MaxLength(2048)
+  profilePictureUrl?: string;
 }

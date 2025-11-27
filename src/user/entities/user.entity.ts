@@ -29,6 +29,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ nullable: true, length: 2048 })
+  profilePictureUrl?: string;
+
   @Column({ nullable: true })
   forgotPassToken?: string;
 

@@ -2,6 +2,7 @@ interface UserReturnInterface {
   id?: string;
   email: string;
   username: string;
+  profilePictureUrl?: string;
 }
 
 export class UserReturn {
@@ -9,6 +10,7 @@ export class UserReturn {
     this.id = user.id;
     this.email = user.email;
     this.username = user.username;
+    this.profilePictureUrl = user.profilePictureUrl;
   }
 
   id?: string;
@@ -16,4 +18,6 @@ export class UserReturn {
   email: string;
 
   username: string;
+
+  profilePictureUrl?: string;
 }
