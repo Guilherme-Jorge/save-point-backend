@@ -304,14 +304,14 @@ export class UserService {
       return "Unexpected error.";
     }
 
-    const user = await this.findUserByEmail(userFromGoogle.email);
+    const user = await this.userRepository.findOneBy({ email: userFromGoogle.email });
     let register;
 
     if (!user) {
       register = await this.registerUser(
         {
           email: userFromGoogle.email,
-          password: "abcde123",
+          password: "GoogleSigned",
           username: userFromGoogle.firstName,
         },
         "pt",
@@ -319,9 +319,9 @@ export class UserService {
     }
 
     const queryParams = new URLSearchParams({
-      userId: user.id || register.user.id,
-      username: user.username || register.user.username,
-      email: user.email || register.user.email,
+      userId: user ? user.id : register.user.id,
+      username: user ? user.username : register.user.username,
+      email: user ? user.email : register.user.email,
     }).toString();
 
     return res.redirect(`http://localhost:5173/home?${queryParams}`);
