@@ -45,12 +45,17 @@ export class IgdbGameSearchService {
     private readonly igdbAuthService: IgdbAuthService,
   ) {}
 
-  async searchByKeyword(keyword: string): Promise<IgdbGame | null> {
+  private clampLimit(limit: number): number {
+    return Math.min(Math.max(Math.floor(limit), 1), 50);
+  }
+
+  async searchByKeyword(keyword: string, limit = 20): Promise<IgdbGame[]> {
     const normalizedKeyword = keyword.trim();
     if (!normalizedKeyword) {
-      return null;
+      return [];
     }
 
+    const sanitizedLimit = this.clampLimit(limit);
     const accessToken = await this.igdbAuthService.getAccessToken();
 
     const headers = {
@@ -63,7 +68,7 @@ export class IgdbGameSearchService {
     const query = [
       `search "${escapedKeyword}";`,
       `fields ${this.fields};`,
-      "limit 1;",
+      `limit ${sanitizedLimit};`,
     ].join("\n");
 
     try {
@@ -73,10 +78,10 @@ export class IgdbGameSearchService {
 
       const data = response.data as IgdbGameInterface[];
       if (!data?.length) {
-        return null;
+        return [];
       }
 
-      return new IgdbGame(data[0]);
+      return data.map((item) => new IgdbGame(item));
     } catch (error) {
       this.logger.error(
         `Failed to search IGDB for keyword ${normalizedKeyword}`,

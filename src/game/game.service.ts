@@ -4,13 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import {
-  ILike,
-  In,
-  QueryFailedError,
-  Repository,
-  UpdateResult,
-} from "typeorm";
+import { ILike, In, QueryFailedError, Repository, UpdateResult } from "typeorm";
 import { Game } from "./entities/game.entity";
 import { CreateGameDto } from "./dto/create-game.dto";
 import { UpdateGameDto } from "./dto/update-game.dto";
@@ -18,6 +12,8 @@ import { IgdbGame } from "src/shared/models/igdb-game";
 import { GameReturn } from "./dto/game-return.dto";
 import { IgdbGameImportService } from "./services/igdb-game-import.service";
 import { IgdbGameSearchService } from "./services/igdb-game-search.service";
+
+type GameIdRow = { game_id: string };
 
 function getThreshold(length: number): number {
   if (length <= 3) {
@@ -146,15 +142,15 @@ export class GameService {
       // First, get game IDs that match the query
       const gameIds = await this.gameRepository
         .createQueryBuilder("game")
-        .select("game.id")
+        .select("game.id", "game_id")
         .where("game.name ILIKE :query", { query: `%${query}%` })
         .orderBy("game.name", "ASC")
         .limit(limit)
-        .getRawMany();
+        .getRawMany<GameIdRow>();
 
       if (gameIds.length > 0) {
         // Then get the full games with relations
-        const ids = gameIds.map(row => row.game_id);
+        const ids = gameIds.map(({ game_id }) => game_id);
         games = await this.gameRepository.find({
           where: { id: In(ids) },
           relations: [
@@ -199,15 +195,15 @@ export class GameService {
         // First, get game IDs that match the query
         const gameIds = await this.gameRepository
           .createQueryBuilder("game")
-          .select("game.id")
+          .select("game.id", "game_id")
           .where("game.name ILIKE :query", { query: `%${query}%` })
           .orderBy("game.name", "ASC")
           .limit(limit)
-          .getRawMany();
+          .getRawMany<GameIdRow>();
 
         if (gameIds.length > 0) {
           // Then get the full games with relations
-          const ids = gameIds.map(row => row.game_id);
+          const ids = gameIds.map(({ game_id }) => game_id);
           games = await this.gameRepository.find({
             where: { id: In(ids) },
             relations: [
@@ -234,6 +230,35 @@ export class GameService {
     return games.map((game) => new GameReturn(game));
   }
 
+  async fuzzySearchByNameWithIgdbFallback(
+    query: string,
+    limit = 10,
+  ): Promise<GameReturn[]> {
+    const dbResults = await this.fuzzySearchByName(query, limit);
+
+    if (dbResults.length) {
+      return dbResults;
+    }
+
+    const igdbGames = await this.igdbGameSearchService.searchByKeyword(
+      query,
+      limit,
+    );
+
+    if (!igdbGames.length) {
+      return [];
+    }
+
+    const importedGames: GameReturn[] = [];
+
+    for (const igdbGame of igdbGames) {
+      const game = await this.createFromIgdb(igdbGame);
+      importedGames.push(game);
+    }
+
+    return importedGames;
+  }
+
   async update(
     id: string,
     updateGameDto: UpdateGameDto,
@@ -245,31 +270,52 @@ export class GameService {
     await this.gameRepository.delete(id);
   }
 
-  async findByKeyword(keyword: string): Promise<GameReturn> {
+  async findByKeyword(keyword: string, limit = 20): Promise<GameReturn[]> {
     const sanitizedKeyword = keyword ? keyword.trim() : "";
 
     if (!sanitizedKeyword) {
       throw new BadRequestException("Keyword query is required");
     }
 
-    const existingGame = await this.gameRepository.findOne({
+    const normalizedLimit = Math.min(Math.max(limit, 1), 50);
+    const existingGames = await this.gameRepository.find({
       where: { name: ILike(`%${sanitizedKeyword}%`) },
       relations: this.detailedRelations,
+      order: { name: "ASC" },
     });
 
-    if (existingGame) {
-      return new GameReturn(existingGame);
+    const results: GameReturn[] = [];
+    const seenIgdbIds = new Set<number>();
+
+    for (const game of existingGames) {
+      const dto = new GameReturn(game);
+      if (game.igdbId) {
+        seenIgdbIds.add(game.igdbId);
+      }
+      results.push(dto);
     }
 
-    const igdbGame =
-      await this.igdbGameSearchService.searchByKeyword(sanitizedKeyword);
+    const igdbGames = await this.igdbGameSearchService.searchByKeyword(
+      sanitizedKeyword,
+      normalizedLimit,
+    );
 
-    if (!igdbGame) {
+    for (const igdbGame of igdbGames) {
+      if (seenIgdbIds.has(igdbGame.id)) {
+        continue;
+      }
+
+      const game = await this.createFromIgdb(igdbGame);
+      seenIgdbIds.add(igdbGame.id);
+      results.push(game);
+    }
+
+    if (!results.length) {
       throw new NotFoundException(
-        `Game with keyword "${sanitizedKeyword}" not found`,
+        `Games with keyword "${sanitizedKeyword}" not found`,
       );
     }
 
-    return this.igdbGameImportService.importFromIgdb(igdbGame);
+    return results;
   }
 }

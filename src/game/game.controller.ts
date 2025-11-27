@@ -1,16 +1,19 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
   ParseDatePipe,
+  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
 } from "@nestjs/common";
 import { GameService } from "./game.service";
+import { GameReturn } from "./dto/game-return.dto";
 import { CreateGameDto } from "./dto/create-game.dto";
 import { UpdateGameDto } from "./dto/update-game.dto";
 import { GameByIdPipe } from "./pipes/game-by-id.pipe";
@@ -48,13 +51,16 @@ export class GameController {
   }
 
   @Get("search")
-  search(@Query("q") q: string) {
-    return this.gameService.fuzzySearchByName(q);
+  async search(@Query("q") q: string): Promise<GameReturn[]> {
+    return this.gameService.fuzzySearchByNameWithIgdbFallback(q);
   }
 
   @Get("keyword")
-  searchByKeyword(@Query("q") keyword: string) {
-    return this.gameService.findByKeyword(keyword);
+  searchByKeyword(
+    @Query("q") keyword: string,
+    @Query("limit", new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ): Promise<GameReturn[]> {
+    return this.gameService.findByKeyword(keyword, limit);
   }
 
   @Patch("game/:id")
