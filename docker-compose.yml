@@ -12,9 +12,9 @@ services:
       - save_point_postgres_net
     depends_on:
       - db
-    #   - cover-matcher
-    # environment:
-    #   - COVER_MATCHER_URL=http://cover-matcher:8000/search-cover
+      - cover-matcher
+    environment:
+      - COVER_MATCHER_URL=http://cover-matcher:8000/search-cover
 
   db:
     container_name: save_point_postgres_db
@@ -29,23 +29,23 @@ services:
     networks:
       - save_point_postgres_net
 
-  # cover-matcher:
-  #   container_name: save_point_cover_matcher
-  #   build:
-  #     context: .
-  #     dockerfile: services/cover-matcher/Dockerfile
-  #   environment:
-  #     - COVERS_ROOT=/data
-  #     - DEVICE=cpu
-  #     - INDEX_PATH=/data/covers/covers.faiss
-  #     - META_PATH=/data/covers/covers_meta.json
-  #     - WEIGHTS_PATH=/data/covers/cover_encoder.pt
-  #   volumes:
-  #     - ./data:/data:ro
-  #   ports:
-  #     - 8000:8000
-  #   networks:
-  #     - save_point_postgres_net
+  cover-matcher:
+    container_name: save_point_cover_matcher
+    build:
+      context: .
+      dockerfile: services/cover-matcher/Dockerfile
+    environment:
+      - COVERS_ROOT=/data
+      - DEVICE=cpu
+      - INDEX_PATH=/data/covers/covers.faiss
+      - META_PATH=/data/covers/covers_meta.json
+      - WEIGHTS_PATH=/data/covers/cover_encoder.pt
+    volumes:
+      - ./data:/data:ro
+    ports:
+      - 8000:8000
+    networks:
+      - save_point_postgres_net
 
 volumes:
   postgres_data:

@@ -18,7 +18,7 @@ import { ExceptionFilterGlobal } from "./shared/filters/exception-filter-global"
 import { SocialModule } from "./social/social.module";
 import { GatewayModule } from "./gateway/gateway.module";
 import { ChatModule } from "./chat/chat.module";
-// import { CoverMatcherModule } from "./cover-matcher/cover-matcher.module";
+import { CoverMatcherModule } from "./cover-matcher/cover-matcher.module";
 import { CustomListModule } from "./custom-list/custom-list.module";
 import { ForumModule } from "./forum/forum.module";
 import { RecommendationModule } from "./recommendation/recommendation.module";
@@ -44,7 +44,7 @@ import { RecommendationModule } from "./recommendation/recommendation.module";
     CustomListModule,
     ForumModule,
     RecommendationModule,
-    // CoverMatcherModule,
+    CoverMatcherModule,
     // AchievementModule,
     // DirectMessageModule,
     // IgdbWebhookModule,

@@ -90,4 +90,50 @@ export class IgdbGameSearchService {
       throw new InternalServerErrorException("Failed to search IGDB dataset");
     }
   }
+
+  async fetchByIds(ids: number[]): Promise<IgdbGame[]> {
+    const normalizedIds = Array.from(
+      new Set(ids.filter((id) => Number.isInteger(id) && id > 0)),
+    );
+    if (!normalizedIds.length) {
+      return [];
+    }
+
+    const accessToken = await this.igdbAuthService.getAccessToken();
+    const headers = {
+      "Client-ID": this.configService.get<string>("igdb.clientId"),
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    };
+
+    const query = [
+      `where id = (${normalizedIds.join(", ")});`,
+      `fields ${this.fields};`,
+      `limit ${normalizedIds.length};`,
+    ].join("\n");
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(this.endpoint, query, { headers }),
+      );
+      const data = response.data as IgdbGameInterface[];
+      if (!data?.length) {
+        return [];
+      }
+      return data.map((item) => new IgdbGame(item));
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch IGDB games for ids ${normalizedIds.join(", ")}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException(
+        "Failed to fetch IGDB games by id",
+      );
+    }
+  }
+
+  async fetchById(id: number): Promise<IgdbGame | null> {
+    const [game] = await this.fetchByIds([id]);
+    return game ?? null;
+  }
 }
