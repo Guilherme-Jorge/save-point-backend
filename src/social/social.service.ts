@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { User } from "src/user/entities/user.entity";
 import { UserReturn } from "src/user/dto/userReturn.dto";
 import { GameReturn } from "src/game/dto/game-return.dto";
@@ -88,15 +88,16 @@ export class SocialService {
 
     /** FollowsItem represent a List of {@link follows.entity.ts} */
     const followsItem = await this.followsRepository.find({
-      where: { follower: { id: userId } },
+      where: {
+        follower: { id: userId },
+        followed: { deletedAt: IsNull() },
+      },
       relations: ["followed"],
     });
 
-    const friendsList: any = [];
-
-    followsItem.map((friend) =>
-      friendsList.push(new UserReturn(friend.followed)),
-    );
+    const friendsList = followsItem
+      .filter((friend) => friend.followed)
+      .map((friend) => new UserReturn(friend.followed));
 
     return friendsList;
   }
