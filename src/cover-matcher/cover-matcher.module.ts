@@ -6,8 +6,7 @@ import { Game } from "src/game/entities/game.entity";
 import { GameModule } from "src/game/game.module";
 import { CoverMatcherService } from "./cover-matcher.service";
 import { CoverMatcherController } from "./cover-matcher.controller";
-import { IgdbGameSearchService } from "src/game/services/igdb-game-search.service";
-import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
+import { IgdbModule } from "src/shared/http/igdb.module";
 
 @Module({
   imports: [
@@ -15,8 +14,9 @@ import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
     ConfigModule,
     TypeOrmModule.forFeature([Game]),
     GameModule,
+    IgdbModule,
   ],
-  providers: [CoverMatcherService, IgdbGameSearchService, IgdbAuthService],
+  providers: [CoverMatcherService],
   controllers: [CoverMatcherController],
   exports: [CoverMatcherService],
 })

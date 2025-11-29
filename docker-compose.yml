@@ -13,8 +13,6 @@ services:
     depends_on:
       - db
       - cover-matcher
-    environment:
-      - COVER_MATCHER_URL=http://cover-matcher:8000/search-cover
 
   db:
     container_name: save_point_postgres_db

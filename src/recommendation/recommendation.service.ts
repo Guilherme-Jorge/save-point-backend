@@ -1,14 +1,9 @@
-import { HttpService } from "@nestjs/axios";
 import {
   Inject,
   Injectable,
   Logger,
   ServiceUnavailableException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
-import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
-import { GameFromIgdbPipe } from "src/shared/pipes/game-from-igdb.pipe";
 import {
   PopScorePopularityMetricDto,
   PopScoreRecommendationItemDto,
@@ -24,6 +19,8 @@ import { PopScorePopularityType } from "./enums/popscore-popularity-type.enum";
 import { IgdbGame } from "src/shared/models/igdb-game";
 import { GameService } from "src/game/game.service";
 import { GameReturn } from "src/game/dto/game-return.dto";
+import { IgdbHttpGateway } from "src/shared/http/igdb-http.gateway";
+import { IgdbGameSearchService } from "src/game/services/igdb-game-search.service";
 
 interface PopScorePopularityTypeResponse {
   id: number;
@@ -62,20 +59,16 @@ interface EnrichedRecommendationItem {
 @Injectable()
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
-  private readonly popularityTypesEndpoint =
-    "https://api.igdb.com/v4/popularity_types";
-  private readonly popularityPrimitivesEndpoint =
-    "https://api.igdb.com/v4/popularity_primitives";
+  private readonly popularityTypesPath = "/v4/popularity_types";
+  private readonly popularityPrimitivesPath = "/v4/popularity_primitives";
   private readonly popularityTypesQuery =
     "fields name,popularity_source,updated_at; sort id asc;";
   private readonly defaultLimit = 10;
   private readonly maxLimit = 50;
 
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-    private readonly igdbAuthService: IgdbAuthService,
-    private readonly gameFromIgdbPipe: GameFromIgdbPipe,
+    private readonly igdbHttpGateway: IgdbHttpGateway,
+    private readonly igdbGameSearchService: IgdbGameSearchService,
     private readonly gameService: GameService,
     private readonly igdbDiscoverService: IgdbDiscoverService,
     @Inject(POPSCORE_RECOMMENDATION_OPTIONS)
@@ -163,17 +156,11 @@ export class RecommendationService {
 
   private async fetchPopularityTypes(): Promise<PopScorePopularityMetricDto[]> {
     try {
-      const response = await firstValueFrom(
-        this.httpService.post<PopScorePopularityTypeResponse[]>(
-          this.popularityTypesEndpoint,
-          this.popularityTypesQuery,
-          {
-            headers: await this.buildHeaders(),
-          },
-        ),
-      );
+      const response = await this.igdbHttpGateway.post<
+        PopScorePopularityTypeResponse[]
+      >(this.popularityTypesPath, this.popularityTypesQuery);
 
-      return response.data.map((type) => this.mapPopularityType(type));
+      return response.map((type) => this.mapPopularityType(type));
     } catch (error) {
       this.logError("Failed to fetch PopScore popularity types", error);
       throw new ServiceUnavailableException(
@@ -189,17 +176,10 @@ export class RecommendationService {
     const query = `fields game_id,value,popularity_type; sort value desc; limit ${limit}; where popularity_type = ${popularityTypeId};`;
 
     try {
-      const response = await firstValueFrom(
-        this.httpService.post<PopScorePrimitiveResponse[]>(
-          this.popularityPrimitivesEndpoint,
-          query,
-          {
-            headers: await this.buildHeaders(),
-          },
-        ),
+      return this.igdbHttpGateway.post<PopScorePrimitiveResponse[]>(
+        this.popularityPrimitivesPath,
+        query,
       );
-
-      return response.data;
     } catch (error) {
       this.logError(
         `Failed to fetch PopScore primitives for metric ${popularityTypeId}`,
@@ -214,20 +194,36 @@ export class RecommendationService {
   private async enrichGamesWithScores(
     primitives: PopScorePrimitiveResponse[],
   ): Promise<EnrichedRecommendationItem[]> {
-    return Promise.all(
-      primitives.map(async (primitive) => {
-        const igdbGame = await this.gameFromIgdbPipe.transform(
-          primitive.game_id.toString(),
-        );
-        const storedGame = await this.gameService.createFromIgdb(igdbGame);
+    if (!primitives.length) {
+      return [];
+    }
 
-        return {
-          score: primitive.value,
-          igdbGame,
-          storedGame,
-        };
-      }),
+    const uniqueIds = Array.from(
+      new Set(primitives.map((primitive) => primitive.game_id)),
     );
+
+    const igdbGames = await this.igdbGameSearchService.fetchByIds(uniqueIds);
+    const igdbGameMap = new Map(igdbGames.map((game) => [game.id, game]));
+
+    const items: EnrichedRecommendationItem[] = [];
+
+    for (const primitive of primitives) {
+      const igdbGame = igdbGameMap.get(primitive.game_id);
+      if (!igdbGame) {
+        this.logger.warn(`Missing IGDB game ${primitive.game_id}`);
+        continue;
+      }
+
+      const storedGame = await this.gameService.createFromIgdb(igdbGame);
+
+      items.push({
+        score: primitive.value,
+        igdbGame,
+        storedGame,
+      });
+    }
+
+    return items;
   }
 
   private mapToRecommendationItems(
@@ -246,24 +242,6 @@ export class RecommendationService {
       score,
       game: storedGame,
     }));
-  }
-
-  private async buildHeaders(): Promise<Record<string, string>> {
-    const clientId = this.configService.get<string>("igdb.clientId");
-    const accessToken = await this.igdbAuthService.getAccessToken();
-
-    if (!clientId) {
-      throw new ServiceUnavailableException(
-        "IGDB client configuration is missing",
-      );
-    }
-
-    return {
-      "Client-ID": clientId,
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-      "Content-Type": "text/plain",
-    };
   }
 
   private mapPopularityType(

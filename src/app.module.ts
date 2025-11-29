@@ -1,3 +1,4 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import { ConsoleLogger, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -25,6 +26,10 @@ import { RecommendationModule } from "./recommendation/recommendation.module";
 
 @Module({
   imports: [
+    CacheModule.register({
+      ttl: 3600,
+      isGlobal: true,
+    }),
     ConfigModule.forRoot({
       load: [appConfig, databaseConfig],
       isGlobal: true,

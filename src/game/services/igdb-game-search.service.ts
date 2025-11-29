@@ -1,18 +1,17 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { IgdbGame, IgdbGameInterface } from "src/shared/models/igdb-game";
-import { IgdbAuthService } from "src/shared/services/igdb-auth.service";
+import { IgdbHttpGateway } from "src/shared/http/igdb-http.gateway";
 
 @Injectable()
 export class IgdbGameSearchService {
   private readonly logger = new Logger(IgdbGameSearchService.name);
-  private readonly endpoint = "https://api.igdb.com/v4/games";
   private readonly fields = [
     "id",
     "name",
@@ -40,10 +39,27 @@ export class IgdbGameSearchService {
   ].join(", ");
 
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-    private readonly igdbAuthService: IgdbAuthService,
+    private readonly igdbHttpGateway: IgdbHttpGateway,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
+
+  private buildCacheKey(...parts: (string | number)[]): string {
+    return ["igdb", ...parts].join(":");
+  }
+
+  private async cacheGetOrSet<T>(
+    key: string,
+    factory: () => Promise<T>,
+  ): Promise<T> {
+    const cached = await this.cache.get<T>(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const value = await factory();
+    await this.cache.set(key, value ?? null);
+    return value;
+  }
 
   private clampLimit(limit: number): number {
     return Math.min(Math.max(Math.floor(limit), 1), 50);
@@ -56,13 +72,6 @@ export class IgdbGameSearchService {
     }
 
     const sanitizedLimit = this.clampLimit(limit);
-    const accessToken = await this.igdbAuthService.getAccessToken();
-
-    const headers = {
-      "Client-ID": this.configService.get<string>("igdb.clientId"),
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-    };
 
     const escapedKeyword = normalizedKeyword.replace(/"/g, '\\"');
     const query = [
@@ -71,17 +80,20 @@ export class IgdbGameSearchService {
       `limit ${sanitizedLimit};`,
     ].join("\n");
 
+    const cacheKey = this.buildCacheKey(
+      "search",
+      escapedKeyword.toLowerCase(),
+      sanitizedLimit,
+    );
+
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(this.endpoint, query, { headers }),
-      );
-
-      const data = response.data as IgdbGameInterface[];
-      if (!data?.length) {
-        return [];
-      }
-
-      return data.map((item) => new IgdbGame(item));
+      const data = await this.cacheGetOrSet(cacheKey, async () => {
+        const response = await this.igdbHttpGateway.postGames<
+          IgdbGameInterface[]
+        >(query);
+        return response?.length ? response.map((item) => new IgdbGame(item)) : [];
+      });
+      return data;
     } catch (error) {
       this.logger.error(
         `Failed to search IGDB for keyword ${normalizedKeyword}`,
@@ -99,28 +111,25 @@ export class IgdbGameSearchService {
       return [];
     }
 
-    const accessToken = await this.igdbAuthService.getAccessToken();
-    const headers = {
-      "Client-ID": this.configService.get<string>("igdb.clientId"),
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-    };
-
     const query = [
       `where id = (${normalizedIds.join(", ")});`,
       `fields ${this.fields};`,
       `limit ${normalizedIds.length};`,
     ].join("\n");
 
+    const cacheKey = this.buildCacheKey(
+      "ids",
+      normalizedIds.sort((a, b) => a - b).join(","),
+    );
+
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(this.endpoint, query, { headers }),
-      );
-      const data = response.data as IgdbGameInterface[];
-      if (!data?.length) {
-        return [];
-      }
-      return data.map((item) => new IgdbGame(item));
+      const data = await this.cacheGetOrSet(cacheKey, async () => {
+        const response = await this.igdbHttpGateway.postGames<
+          IgdbGameInterface[]
+        >(query);
+        return response?.length ? response.map((item) => new IgdbGame(item)) : [];
+      });
+      return data;
     } catch (error) {
       this.logger.error(
         `Failed to fetch IGDB games for ids ${normalizedIds.join(", ")}`,
